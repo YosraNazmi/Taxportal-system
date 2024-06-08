@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('appendix_three', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('user_id'); // Assuming 'id' column in 'users' table is unsigned big integer
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');     
             $table->decimal('accounting_result_current_year', 15, 2)->nullable();
             $table->decimal('interest_fines_delays_taxes',15, 2)->nullable();
             $table->decimal('depreciation_tangible_assets',15, 2)->nullable();
