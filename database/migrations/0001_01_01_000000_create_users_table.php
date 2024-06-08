@@ -30,9 +30,9 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('code');
             $table->string('password');
-            $table->string('status')->default('pending'); // Set default value to 'pending'
-            $table->string('approval_comment');
-            $table->string('approval_type');
+            $table->string('status')->default('pending');
+            $table->string('approval_comment')->nullable(); // Make this field nullable
+            $table->string('approval_type')->nullable();
             $table->timestamps();
         });
     }
