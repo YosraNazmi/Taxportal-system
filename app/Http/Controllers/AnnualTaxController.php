@@ -334,60 +334,45 @@ class AnnualTaxController extends Controller
 
         return redirect()->route('Taxpayer.TPDashboard')->with('success', 'Form submitted successfully.');
     }
-
+    
     public function submitFormA(Request $request) 
     {
-        $request->validate([
-            'uen' => 'required|string|max:255',
-            'financialYearFrom' => 'required|date',
-            'financialYearTo' => 'required|date',
-            'companyName' => 'required|string|max:255',
-            'address' => 'required|string|max:255',
-            'city' => 'required|string|max:255',
-            'country' => 'required|string|max:255',
-            'postalCode' => 'required|string|max:10',
-            'phone1' => 'required|string|max:20',
-            'phone2' => 'nullable|string|max:20',
-            'email' => 'required|email|max:255',
-            'legalStructureChange' => 'required|string|in:yes,no',
-            'legalStructureChangeDate' => 'required_if:legalStructureChange,yes|date|nullable',
-            'newLegalStructure' => 'required_if:legalStructureChange,yes|string|max:255|nullable',
-            'mainActivityChange' => 'required|string|in:yes,no',
-            'mainActivityChangeSpecify' => 'required_if:mainActivityChange,yes|string|max:255|nullable',
-            'companyConsolidated' => 'required|string|in:yes,no',
-            'companyConsolidationDate' => 'required_if:companyConsolidated,yes|date|nullable',
-            'subsidiaryLiquidated' => 'required|in:yes,no',
-            'branchClosed' => 'required|in:yes,no',
-            'companyLiquidated' => 'required|in:yes,no',
-            'accountingSystem' => 'array',
-            'accountingSystem.*' => 'in:Manual,Machine',
-        ]);
-
-        $data = $request->all();
-         // Serialize the accountingSystem array into a string
-        $data['accountingSystem'] = json_encode($request->input('accountingSystem'));
-        $data['user_id'] = Auth::id();
-        FormA::create($data);
-        return redirect()->back()->with('success', 'Form submitted successfully.');
-
-    }
-
-    public function submitFormB(Request $request)
-    {
         try {
-
-            $formA = FormA::where('user_id', auth()->id())->first();
-
-        // Check if FormA instance exists
-        if (!$formA) {
-            throw new \Exception('No matching FormA record found.');
-        }
-
-        // Assign the formA_id to the request data
-        $request->merge(['formA_id' => $formA->id]);
-
-            // Validate the request data
+            // Start a transaction
+            DB::beginTransaction();
+    
+            // Validate the incoming request data for both Form A and Form B
             $validatedData = $request->validate([
+                // Validation rules for Form A fields...
+                'uen' => 'required|string|max:255',
+                'financialYearFrom' => 'required|date',
+                'financialYearTo' => 'required|date',
+                'companyName' => 'required|string|max:255',
+                'address' => 'required|string|max:255',
+                'city' => 'required|string|max:255',
+                'country' => 'required|string|max:255',
+                'postalCode' => 'required|string|max:10',
+                'phone1' => 'required|string|max:20',
+                'phone2' => 'nullable|string|max:20',
+                'email' => 'required|email|max:255',
+                'legalStructureChange' => 'required|string|in:yes,no',
+                'legalStructureChangeDate' => 'required_if:legalStructureChange,yes|date|nullable',
+                'newLegalStructure' => 'required_if:legalStructureChange,yes|string|max:255|nullable',
+                'mainActivityChange' => 'required|string|in:yes,no',
+                'mainActivityChangeSpecify' => 'required_if:mainActivityChange,yes|string|max:255|nullable',
+                'companyConsolidated' => 'required|string|in:yes,no',
+                'companyConsolidationDate' => 'required_if:companyConsolidated,yes|date|nullable',
+                'subsidiaryLiquidated' => 'required|string|in:yes,no',
+                'branchClosed' => 'required|string|in:yes,no',
+                'companyLiquidated' => 'required|string|in:yes,no',
+                'accountingSystem' => 'array',
+                'accountingSystem.*' => 'in:Manual,Machine',
+                
+            ]);
+    
+            $validatedFormBData = $request->validate([
+                // Validation rules for Form B fields...
+                // Make sure to include 'formA_id' in the validation rules for Form B
                 'netTaxableIncome' => 'nullable',
                 'previousYearsLosses' => 'nullable',
                 'taxableIncome' => 'nullable',
@@ -405,31 +390,36 @@ class AnnualTaxController extends Controller
                 'inwardDate' => 'nullable',
                 'employeeName' => 'nullable',
                 'entryDate' => 'nullable',
-                'formA_id' => 'required|exists:annual_form_a,id', // Ensure the formA_id exists in annual_form_a table
+                'formA_id' => 'required|exists:annual_form_a,id',
             ]);
-
-            // Start a transaction
-            DB::beginTransaction();
-
+    
+             // Serialize the accountingSystem array into a string
+            $validatedData['accountingSystem'] = json_encode($request->input('accountingSystem'));
+            $validatedData['user_id'] = Auth::id();
+            
+            // Create the FormA instance with the validated data
+            $formA = FormA::create($validatedData);
+            dd($formA);
+            // Assign the formA_id to the validated data
+            $validatedFormBData['formA_id'] = $formA->id;
+            
             // Create a new FormB instance with the validated data
-            $formB = FormB::create($validatedData);
-
+            FormB::create($validatedFormBData);
+            
             // Commit the transaction
             DB::commit();
-
-            // Redirect to a success page or return a response
+    
             return redirect()->back()->with('success', 'Form submitted successfully.');
         } catch (\Exception $e) {
-            // Rollback the transaction in case of an error
-            DB::rollback();
-
-            // Log the error
-            Log::error('Error submitting Form B: ' . $e->getMessage());
-
-            // Redirect back with an error message
+            // Rollback the transaction on error
+            DB::rollBack();
+    
+            // Log the exception message or handle it as needed
             return redirect()->back()->with('error', 'An error occurred while submitting the form. Please try again.');
         }
     }
+    
+   
 
     public function appendixOne(){
         return view('Taxpayer.AnnualForms.FormD');
@@ -2093,8 +2083,4 @@ class AnnualTaxController extends Controller
     
         return view('Taxpayer.AnnualForms.FormA', compact('previousYearsLosses', 'netTaxableIncome', 'foreignTaxAdoption', 'taxDeducted'));
     }
-    
-
-    
-
 }

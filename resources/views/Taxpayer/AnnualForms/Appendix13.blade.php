@@ -1,6 +1,6 @@
 @extends('Taxpayer.AnnualTaxForm')
 
-@section('AppendixTherteen')
+@section('AppendixThirteen')
 <div class="custom-container mt-5">
     <br>
     <h5 class="text-center custom-header form-table">Appendix #13 Statement of Sales and Purchases with Interrelated Companies						</h5>

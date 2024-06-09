@@ -2,7 +2,7 @@
 
 @section('AppendixFive')
 <div class="custom-container mt-5">
-    <form action="{{route('AppendixFive.store')}}" method="POST">
+    <form id="appendixFiveForm" action="{{route('AppendixFive.store')}}" method="POST">
         @csrf
         @if ($errors->any())
             <div class="alert alert-danger">
@@ -71,6 +71,9 @@
             </tbody>
         </table>
         <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="button" class="btn btn-secondary" id="prevButton" ><a href="{{route('AppendixFour.store')}}">Previous</a></button>
+        <button type="button" class="btn btn-primary" id="nextButton"><a href="{{route('AppendixSix.store')}}">Next</a></button>
+        
         <br>
     </form>
     

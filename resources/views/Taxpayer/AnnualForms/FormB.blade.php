@@ -1,5 +1,4 @@
-<!--<form action="{{route('submitFormA')}}" method="POST">-->
-    @csrf
+
     <h3 class="mt-4">Income Tax Declaration for Companies</h3>
         <!-- Section 10-17: Tax Calculation -->
         <div class="form-section">
@@ -118,9 +117,7 @@
             </div>
         </div>
         </div>
-        
-<!--</form>-->
-
+    
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {

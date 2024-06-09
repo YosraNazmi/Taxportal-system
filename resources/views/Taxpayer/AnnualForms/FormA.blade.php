@@ -1,6 +1,6 @@
 
 @extends('Taxpayer.AnnualTaxForm')
-@section('FormD')
+@section('FormA')
 <style>
     .custom-container {
         max-width: 960px; /* Customize this value as needed */
@@ -46,10 +46,20 @@
     </div>
     <form action="{{ route('submitFormA') }}" method="POST" id="multi-step-form">
         @csrf
-        @foreach ($errors->all() as $error)
-        <div class="alert alert-danger">{{ $error }}</div>
-    @endforeach
-          
+        @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
+        @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+        @endif
             <div class="step step-1">
                 
                 <h3 class="mt-4">Income Tax Declaration for Companies</h3>

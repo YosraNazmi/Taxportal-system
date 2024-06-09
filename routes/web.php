@@ -22,7 +22,6 @@ Route::get('/design', function () {
     return view('design');
 });
 
-Route::post('/design-post', [AnnualTaxController::class,'submitFormB'])->name('submitFormA');
 
 // Taxpayer routes
 Route::controller(TaxpayerController::class)->group(function () {
@@ -63,6 +62,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/Annual-tax-form', [AnnualTaxController::class, 'viewAnnualTaxForm'])->name('viewAnnualTaxForm');
     Route::post('/taxpayer/submit-annual-form', [AnnualTaxController::class, 'submitAnnualForm'])->name('taxpayer.submitAnnualForm');
+
+    Route::post('/submit-Form', [AnnualTaxController::class, 'submitFormA'])->name('submitFormA');
 
     Route::get('/appendix-one', [AnnualTaxController::class, 'appendixOne'])->name('appendixOne');
     Route::post('/appendix-one', [AnnualTaxController::class, 'storeAppendixOne'])->name('appendixOne.store');
