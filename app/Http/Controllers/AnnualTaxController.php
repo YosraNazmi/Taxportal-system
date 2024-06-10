@@ -43,307 +43,31 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use phpDocumentor\Reflection\Types\Nullable;
-use SebastianBergmann\CodeCoverage\Report\Xml\Totals;
 
 class AnnualTaxController extends Controller
 {
-    //
-
-    public function viewAnnualTaxForm()
+    
+    public function formA()
     {
-        $user = Auth::user();
-        $currentYear = date('Y');
-
-        // Check if the user has already submitted the form for the current year
-        $existingForm = AnnualForms::where('user_id', $user->id)
-                        ->whereYear('created_at', $currentYear)
-                        ->first();
-
-        if ($existingForm) {
-            return redirect()->back()->with('error', 'You have already submitted the form for this year.');
-        }
-        return view('Taxpayer.AnnualTaxForm');
-    }
-
-    public function submitAnnualForm(Request $request)
-    {
-        $user = Auth::user();
-        $currentYear = date('Y');
-
-        
-
-        // Validate and save the form data
-        $validatedData = $request->validate([
-            'uen' => 'required|string|max:255',
-            'financialYearFrom' => 'required|date',
-            'financialYearTo' => 'required|date|after_or_equal:financialYearFrom',
-            'companyName' => 'required|string|max:255',
-            'address' => 'required|string|max:255',
-            'city' => 'required|string|max:255',
-            'country' => 'required|string|max:255',
-            'postalCode' => 'required|string|max:10',
-            'phone1' => 'required|string|max:15',
-            'phone2' => 'nullable|string|max:15',
-            'email' => 'nullable|email|max:255',
-            'legalStructureChange' => 'required|in:yes,no',
-            'legalStructureChangeDate' => 'nullable|date|required_if:legalStructureChange,yes',
-            'newLegalStructure' => 'nullable|string|max:255|required_if:legalStructureChange,yes',
-            'mainActivityChange' => 'required|in:yes,no',
-            'mainActivityChangeSpecify' => 'nullable|string|max:255|required_if:mainActivityChange,yes',
-            'companyConsolidated' => 'required|in:yes,no',
-            'companyConsolidationDate' => 'nullable|date|required_if:companyConsolidated,yes',
-            'subsidiaryLiquidated' => 'required|in:yes,no',
-            'branchClosed' => 'required|in:yes,no',
-            'companyLiquidated' => 'required|in:yes,no',
-            'accountingSystem' => 'array',
-            'accountingSystem.*' => 'in:Manual,Machine',
-            // New validation rules for Tax Calculation section
-            'netTaxableIncome' => 'required|numeric|min:0',
-            'previousYearsLosses' => 'required|numeric|min:0',
-            'taxableIncome' => 'required|numeric|min:0',
-            'taxRatio' => 'required|string|max:10', // Assuming taxRatio is a string like '15%'
-            'toBePaidTax' => 'required|numeric|min:0',
-            'foreignTaxAdoption' => 'required|numeric|min:0',
-            'taxDeducted' => 'required|numeric|min:0',
-            'netPayableTax' => 'required|numeric|min:0',
-            // New validation rules for Submission of the Declaration section
-            'execManagerName' => 'required|string|max:255',
-            'execManagerSignature' => 'required|string|max:255',
-            'execManagerDate' => 'required|date',
-            // New validation rules for Auditor Information section
-            'auditorName' => 'required|string|max:255',
-            'auditorPhone' => 'required|string|max:15',
-            'auditorEmail' => 'required|email|max:255',
-            // New validation rules for Administration Specific section
-            'inwardNumber' => 'required|string|max:255',
-            'inwardDate' => 'required|date',
-            'employeeName' => 'required|string|max:255',
-            'entryDate' => 'required|date',
-            'adminSignature' => 'required|string|max:255',
-            // New validation rules for Annexes section
-            'annexes' => 'required|array',
-            'annexes.*' => 'required|in:1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27',
-            // Validation rules for General Budget Statement table
-            'current_funds_banks' => 'nullable|numeric|min:0',
-            'prior_funds_banks' => 'nullable|numeric|min:0',
-            'current_short_term_investments' => 'nullable|numeric|min:0',
-            'prior_short_term_investments' => 'nullable|numeric|min:0',
-            'current_paid_short_term_loans' => 'nullable|numeric|min:0',
-            'prior_paid_short_term_loans' => 'nullable|numeric|min:0',
-            'current_trade_receivables' => 'nullable|numeric|min:0',
-            'prior_trade_receivables' => 'nullable|numeric|min:0',
-            'current_other_receivables' => 'nullable|numeric|min:0',
-            'prior_other_receivables' => 'nullable|numeric|min:0',
-            'current_receipt_papers' => 'nullable|numeric|min:0',
-            'prior_receipt_papers' => 'nullable|numeric|min:0',
-            'current_inventory' => 'nullable|numeric|min:0',
-            'prior_inventory' => 'nullable|numeric|min:0',
-            'current_other_short_term_assets' => 'nullable|numeric|min:0',
-            'prior_other_short_term_assets' => 'nullable|numeric|min:0',
-            'current_total_current_assets' => 'nullable|numeric|min:0',
-            'prior_total_current_assets' => 'nullable|numeric|min:0',
-            'current_long_term_investments' => 'nullable|numeric|min:0',
-            'prior_long_term_investments' => 'nullable|numeric|min:0',
-            'current_long_term_loans_granted' => 'nullable|numeric|min:0',
-            'prior_long_term_loans_granted' => 'nullable|numeric|min:0',
-            'current_total_tangible_fixed_assets' => 'nullable|numeric|min:0',
-            'prior_total_tangible_fixed_assets' => 'nullable|numeric|min:0',
-            'current_total_depreciation' => 'nullable|numeric|min:0',
-            'prior_total_depreciation' => 'nullable|numeric|min:0',
-            'current_total_intangible_fixed_assets' => 'nullable|numeric|min:0',
-            'prior_total_intangible_fixed_assets' => 'nullable|numeric|min:0',
-            'current_total_amortization' => 'nullable|numeric|min:0',
-            'prior_total_amortization' => 'nullable|numeric|min:0',
-            'current_other_long_term_assets' => 'nullable|numeric|min:0',
-            'prior_other_long_term_assets' => 'nullable|numeric|min:0',
-            'current_total_long_term_assets' => 'nullable|numeric|min:0',
-            'prior_total_long_term_assets' => 'nullable|numeric|min:0',
-            'current_total_assets' => 'nullable|numeric|min:0',
-            'prior_total_assets' => 'nullable|numeric|min:0',
-            'current_accounts_payable_banks' => 'nullable|numeric|min:0',
-            'prior_accounts_payable_banks' => 'nullable|numeric|min:0',
-            'current_commercial_suppliers' => 'nullable|numeric|min:0',
-            'prior_commercial_suppliers' => 'nullable|numeric|min:0',
-            'current_payment_papers' => 'nullable|numeric|min:0',
-            'prior_payment_papers' => 'nullable|numeric|min:0',
-            'current_accounts_payable_taxes' => 'nullable|numeric|min:0',
-            'prior_accounts_payable_taxes' => 'nullable|numeric|min:0',
-            'current_revenues_received' => 'nullable|numeric|min:0',
-            'prior_revenues_received' => 'nullable|numeric|min:0',
-            'current_other_creditors' => 'nullable|numeric|min:0',
-            'prior_other_creditors' => 'nullable|numeric|min:0',
-            'current_short_term_loans_received' => 'nullable|numeric|min:0',
-            'prior_short_term_loans_received' => 'nullable|numeric|min:0',
-            'current_other_short_term_liabilities' => 'nullable|numeric|min:0',
-            'prior_other_short_term_liabilities' => 'nullable|numeric|min:0',
-            'current_total_short_term_liabilities' => 'nullable|numeric|min:0',
-            'prior_total_short_term_liabilities' => 'nullable|numeric|min:0',
-            'current_long_term_loans_received' => 'nullable|numeric|min:0',
-            'prior_long_term_loans_received' => 'nullable|numeric|min:0',
-            'current_allocations' => 'nullable|numeric|min:0',
-            'prior_allocations' => 'nullable|numeric|min:0',
-            'current_other_long_term_liabilities' => 'nullable|numeric|min:0',
-            'prior_other_long_term_liabilities' => 'nullable|numeric|min:0',
-            'current_total_long_term_liabilities' => 'nullable|numeric|min:0',
-            'prior_total_long_term_liabilities' => 'nullable|numeric|min:0',
-            'current_total_liabilities' => 'nullable|numeric|min:0',
-            'prior_total_liabilities' => 'nullable|numeric|min:0',
-            'current_paid_up_capital' => 'nullable|numeric|min:0',
-            'prior_paid_up_capital' => 'nullable|numeric|min:0',
-            'current_legal_reserve' => 'nullable|numeric|min:0',
-            'prior_legal_reserve' => 'nullable|numeric|min:0',
-            'current_total_other_capital' => 'nullable|numeric|min:0',
-            'prior_total_other_capital' => 'nullable|numeric|min:0',
-            'current_total_capital' => 'nullable|numeric|min:0',
-            'prior_total_capital' => 'nullable|numeric|min:0',
-            'current_total_liabilities_capital' => 'nullable|numeric|min:0',
-            'prior_total_liabilities_capital' => 'nullable|numeric|min:0',
-
-            'current_funds_banks' => 'nullable|numeric',
-            'prior_funds_banks' => 'nullable|numeric',
-            'current_short_term_investments' => 'nullable|numeric',
-            'prior_short_term_investments' => 'nullable|numeric',
-            'current_paid_short_term_loans' => 'nullable|numeric',
-            'prior_paid_short_term_loans' => 'nullable|numeric',
-            'current_trade_receivables' => 'nullable|numeric',
-            'prior_trade_receivables' => 'nullable|numeric',
-            'current_other_receivables' => 'nullable|numeric',
-            'prior_other_receivables' => 'nullable|numeric',
-            'current_receipt_papers' => 'nullable|numeric',
-            'prior_receipt_papers' => 'nullable|numeric',
-            'current_inventory' => 'nullable|numeric',
-            'prior_inventory' => 'nullable|numeric',
-            'current_other_short_term_assets' => 'nullable|numeric',
-            'prior_other_short_term_assets' => 'nullable|numeric',
-            'current_total_current_assets' => 'nullable|numeric',
-            'prior_total_current_assets' => 'nullable|numeric',
-            'current_long_term_investments' => 'nullable|numeric',
-            'prior_long_term_investments' => 'nullable|numeric',
-            'current_long_term_loans_granted' => 'nullable|numeric',
-            'prior_long_term_loans_granted' => 'nullable|numeric',
-            'current_total_tangible_fixed_assets' => 'nullable|numeric',
-            'prior_total_tangible_fixed_assets' => 'nullable|numeric',
-            'current_total_depreciation' => 'nullable|numeric',
-            'prior_total_depreciation' => 'nullable|numeric',
-            'current_total_intangible_fixed_assets' => 'nullable|numeric',
-            'prior_total_intangible_fixed_assets' => 'nullable|numeric',
-            'current_total_amortization' => 'nullable|numeric',
-            'prior_total_amortization' => 'nullable|numeric',
-            'current_other_long_term_assets' => 'nullable|numeric',
-            'prior_other_long_term_assets' => 'nullable|numeric',
-            'current_total_long_term_assets' => 'nullable|numeric',
-            'prior_total_long_term_assets' => 'nullable|numeric',
-            'current_total_assets' => 'nullable|numeric',
-            'prior_total_assets' => 'nullable|numeric',
-            'current_accounts_payable_banks' => 'nullable|numeric',
-            'prior_accounts_payable_banks' => 'nullable|numeric',
-            'current_commercial_suppliers' => 'nullable|numeric',
-            'prior_commercial_suppliers' => 'nullable|numeric',
-            'current_payment_papers' => 'nullable|numeric',
-            'prior_payment_papers' => 'nullable|numeric',
-            'current_accounts_payable_taxes' => 'nullable|numeric',
-            'prior_accounts_payable_taxes' => 'nullable|numeric',
-            'current_revenues_received' => 'nullable|numeric',
-            'prior_revenues_received' => 'nullable|numeric',
-            'current_other_creditors' => 'nullable|numeric',
-            'prior_other_creditors' => 'nullable|numeric',
-            'current_short_term_loans_received' => 'nullable|numeric',
-            'prior_short_term_loans_received' => 'nullable|numeric',
-            'current_other_short_term_liabilities' => 'nullable|numeric',
-            'prior_other_short_term_liabilities' => 'nullable|numeric',
-            'current_total_short_term_liabilities' => 'nullable|numeric',
-            'prior_total_short_term_liabilities' => 'nullable|numeric',
-            'current_long_term_loans_received' => 'nullable|numeric',
-            'prior_long_term_loans_received' => 'nullable|numeric',
-            'current_allocations' => 'nullable|numeric',
-            'prior_allocations' => 'nullable|numeric',
-            'current_other_long_term_liabilities' => 'nullable|numeric',
-            'prior_other_long_term_liabilities' => 'nullable|numeric',
-            'current_total_long_term_liabilities' => 'nullable|numeric',
-            'prior_total_long_term_liabilities' => 'nullable|numeric',
-            'current_total_liabilities' => 'nullable|numeric',
-            'prior_total_liabilities' => 'nullable|numeric',
-            'current_ordinary_shares' => 'nullable|numeric',
-            'prior_ordinary_shares' => 'nullable|numeric',
-            'current_preferred_shares' => 'nullable|numeric',
-            'prior_preferred_shares' => 'nullable|numeric',
-            'current_premiums' => 'nullable|numeric',
-            'prior_premiums' => 'nullable|numeric',
-            'current_reserves' => 'nullable|numeric',
-            'prior_reserves' => 'nullable|numeric',
-            'current_surplus' => 'nullable|numeric',
-            'prior_surplus' => 'nullable|numeric',
-            'current_total_equity' => 'nullable|numeric',
-            'prior_total_equity' => 'nullable|numeric',
-            'current_total_liabilities_and_capital' => 'nullable|numeric',
-            'prior_total_liabilities_and_capital' => 'nullable|numeric',
-
-            'accounting_result_current_year' => 'nullable|numeric',
-            'net_profit_before_tax' => 'nullable|numeric',
-            'interest_fines_delays_taxes' => 'nullable|numeric',
-            'depreciation_tangible_assets' => 'nullable|numeric',
-            'depreciation_intangible_assets' => 'nullable|numeric',
-            'book_losses_investments_solidarity' => 'nullable|numeric',
-            'losses_investments_national_stock' => 'nullable|numeric',
-            'unrealized_losses' => 'nullable|numeric',
-            'expenses_contribute_parent_subsidary' => 'nullable|numeric',
-            'bad_debt_expenses' => 'nullable|numeric',
-            'unauthorized_expenses_compensations_fines' => 'nullable|numeric',
-            'unauthorized_donations_gifts' => 'nullable|numeric',
-            'unauthorized_subsidy_expenses' => 'nullable|numeric',
-            'personal_special_expenses' => 'nullable|numeric',
-            'unauthorized_insurance_expenses' => 'nullable|numeric',
-            'unauthorized_payments_director' => 'nullable|numeric',
-            'other_non_deductible_expenses' => 'nullable|numeric',
-            'unauthorized_benefits_commissions' => 'nullable|numeric',
-            'unauthorized_taxes_fees_penalties' => 'nullable|numeric',
-            'impairment_tangible_intangible_assets' => 'nullable|numeric',
-            'unauthorized_allowances' => 'nullable|numeric',
-            'unpaid_interest_payable' => 'nullable|numeric',
-            'other_positive_adjustments' => 'nullable|numeric',
-            'total_amounts_added_accounting_result' => 'nullable|numeric',
-            'depreciation_permitted_tangible_assets' => 'nullable|numeric',
-            'consumption_tangible_assets_permitted' => 'nullable|numeric',
-            'amounts_bad_debts_allowed' => 'nullable|numeric',
-            'book_profits_investments_solidarity_companies' => 'nullable|numeric',
-            'profits_investments_national_shareholding_companies' => 'nullable|numeric',
-            'profits_investments_realized_abroad' => 'nullable|numeric',
-            'unrealized_gains' => 'nullable|numeric',
-            'benefits_paid_previous_years' => 'nullable|numeric',
-            'other_income_not_taxable' => 'nullable|numeric',
-            'other_negative_adjustments' => 'nullable|numeric',
-            'total_amounts_deducted_accounting_result' => 'nullable|numeric',
-            'net_taxable_income' => 'nullable|numeric',
-
-       ]);
-
-       // Additional logic to check that all required annexes are checked
-       $requiredAnnexes = range(1, 27);
-       foreach ($requiredAnnexes as $annex) {
-           if (!in_array($annex, $validatedData['annexes'])) {
-               return redirect()->back()->withErrors([
-                   'annexes' => "Annex $annex is required."
-               ]);
-           }
-       }
-        $form = new AnnualForms();
-        $form->user_id = $user->id;
-        $form->data = json_encode($validatedData); // Store form data as JSON
-        $form->save();
-
-        return redirect()->route('Taxpayer.TPDashboard')->with('success', 'Form submitted successfully.');
+        $userId = Auth::id();
+    
+        $netTaxableIncome = AppendixThree::where('user_id', $userId)->sum('net_taxable_income');
+        $previousYearsLosses = AppendixTen::where('user_id', $userId)->sum('total');
+        $foreignTaxAdoption = AppendixTwentySix::where('user_id', $userId)->sum('total_1');
+        $taxDeducted = AppendixTwentySeven::where('user_id', $userId)->sum('total_1');
+    
+        return view('Taxpayer.AnnualForms.FormA', compact('previousYearsLosses', 'netTaxableIncome', 'foreignTaxAdoption', 'taxDeducted'));
     }
     
     public function submitFormA(Request $request) 
     {
+        Log::info('submitFormA method called');
         try {
             // Start a transaction
             DB::beginTransaction();
     
             // Validate the incoming request data for both Form A and Form B
             $validatedData = $request->validate([
-                // Validation rules for Form A fields...
                 'uen' => 'required|string|max:255',
                 'financialYearFrom' => 'required|date',
                 'financialYearTo' => 'required|date',
@@ -365,41 +89,39 @@ class AnnualTaxController extends Controller
                 'subsidiaryLiquidated' => 'required|string|in:yes,no',
                 'branchClosed' => 'required|string|in:yes,no',
                 'companyLiquidated' => 'required|string|in:yes,no',
-                'accountingSystem' => 'array',
-                'accountingSystem.*' => 'in:Manual,Machine',
-                
+                'accountingSystem' => 'nullable|string',
             ]);
-    
-            $validatedFormBData = $request->validate([
-                // Validation rules for Form B fields...
-                // Make sure to include 'formA_id' in the validation rules for Form B
-                'netTaxableIncome' => 'nullable',
-                'previousYearsLosses' => 'nullable',
-                'taxableIncome' => 'nullable',
-                'taxRatio' => 'nullable',
-                'toBePaidTax' => 'nullable',
-                'foreignTaxAdoption' => 'nullable',
-                'taxDeducted' => 'nullable',
-                'netPayableTax' => 'nullable',
-                'execManagerName' => 'nullable',
-                'execManagerDate' => 'nullable',
-                'auditorName' => 'nullable',
-                'auditorPhone' => 'nullable',
-                'auditorEmail' => 'nullable',
-                'inwardNumber' => 'nullable',
-                'inwardDate' => 'nullable',
-                'employeeName' => 'nullable',
-                'entryDate' => 'nullable',
-                'formA_id' => 'required|exists:annual_form_a,id',
-            ]);
-    
-             // Serialize the accountingSystem array into a string
-            $validatedData['accountingSystem'] = json_encode($request->input('accountingSystem'));
-            $validatedData['user_id'] = Auth::id();
             
+            $validatedFormBData = $request->validate([
+                'netTaxableIncome' => 'nullable|numeric',
+                'previousYearsLosses' => 'nullable|numeric',
+                'taxableIncome' => 'nullable|numeric',
+                'taxRatio' => 'nullable|string',
+                'toBePaidTax' => 'nullable|numeric',
+                'foreignTaxAdoption' => 'nullable|numeric',
+                'taxDeducted' => 'nullable|numeric',
+                'netPayableTax' => 'nullable|numeric',
+                'execManagerName' => 'nullable|string|max:255',
+                'execManagerDate' => 'nullable|date',
+                'auditorName' => 'nullable|string|max:255',
+                'auditorPhone' => 'nullable|string|max:20',
+                'auditorEmail' => 'nullable|email|max:255',
+                'inwardNumber' => 'nullable|string|max:255',
+                'inwardDate' => 'nullable|date',
+                'employeeName' => 'nullable|string|max:255',
+                'entryDate' => 'nullable|date',
+            ]);
+            
+            $validatedData['user_id'] = Auth::id();
+            Log::info('Validated Form A Data:', $validatedData);
             // Create the FormA instance with the validated data
             $formA = FormA::create($validatedData);
-            dd($formA);
+            // Debugging: Check if Form A is created successfully
+            if (!$formA) {
+                Log::error('Failed to create Form A.');
+                throw new \Exception('Failed to create Form A.');
+            }
+            
             // Assign the formA_id to the validated data
             $validatedFormBData['formA_id'] = $formA->id;
             
@@ -413,15 +135,15 @@ class AnnualTaxController extends Controller
         } catch (\Exception $e) {
             // Rollback the transaction on error
             DB::rollBack();
+            Log::error('Error occurred:', ['exception' => $e]);
     
             // Log the exception message or handle it as needed
             return redirect()->back()->with('error', 'An error occurred while submitting the form. Please try again.');
         }
     }
-    
-   
 
-    public function appendixOne(){
+    public function appendixOne()
+    {
         return view('Taxpayer.AnnualForms.FormD');
     }
 
@@ -2071,16 +1793,5 @@ class AnnualTaxController extends Controller
             'unauthorizedAllowances'
         ));
     }
-    
-    public function formA()
-    {
-        $userId = Auth::id();
-    
-        $netTaxableIncome = AppendixThree::where('user_id', $userId)->sum('net_taxable_income');
-        $previousYearsLosses = AppendixTen::where('user_id', $userId)->sum('total');
-        $foreignTaxAdoption = AppendixTwentySix::where('user_id', $userId)->sum('total_1');
-        $taxDeducted = AppendixTwentySeven::where('user_id', $userId)->sum('total_1');
-    
-        return view('Taxpayer.AnnualForms.FormA', compact('previousYearsLosses', 'netTaxableIncome', 'foreignTaxAdoption', 'taxDeducted'));
-    }
+  
 }

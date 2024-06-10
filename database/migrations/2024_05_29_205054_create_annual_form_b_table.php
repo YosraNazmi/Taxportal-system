@@ -17,7 +17,7 @@ return new class extends Migration
             $table->decimal('netTaxableIncome', 10, 2)->nullable();
             $table->decimal('previousYearsLosses', 10, 2)->nullable();
             $table->decimal('taxableIncome', 10, 2)->nullable();
-            $table->decimal('taxRatio', 5, 2)->nullable();
+            $table->string('taxRatio', 5, 2)->nullable();
             $table->decimal('toBePaidTax', 10, 2)->nullable();
             $table->decimal('foreignTaxAdoption', 10, 2)->nullable();
             $table->decimal('taxDeducted', 10, 2)->nullable();

@@ -60,10 +60,9 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/representatives/{id}', [RepresnetativeController::class, 'update'])->name('representative.update');
     Route::get('/generate-report', [TaxpayerFormController::class, 'generateReport'])->name('generateReport');
 
-    Route::get('/Annual-tax-form', [AnnualTaxController::class, 'viewAnnualTaxForm'])->name('viewAnnualTaxForm');
-    Route::post('/taxpayer/submit-annual-form', [AnnualTaxController::class, 'submitAnnualForm'])->name('taxpayer.submitAnnualForm');
+    Route::get('/income_tax_declaration', [AnnualTaxController::class, 'formA'])->name('formA');
+    Route::post('/income_tax_declaration', [AnnualTaxController::class, 'submitFormA'])->name('submitFormA');
 
-    Route::post('/submit-Form', [AnnualTaxController::class, 'submitFormA'])->name('submitFormA');
 
     Route::get('/appendix-one', [AnnualTaxController::class, 'appendixOne'])->name('appendixOne');
     Route::post('/appendix-one', [AnnualTaxController::class, 'storeAppendixOne'])->name('appendixOne.store');
@@ -72,9 +71,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/appendix-two', [AnnualTaxController::class, 'storeAppendixTwo'])->name('appendixTwo.store');
 
     Route::get('/form-c',[AnnualTaxController::class, 'formC'])->name('formC');
-    Route::get('/income_tax_declaration',[AnnualTaxController::class, 'formA'])->name('formA');
     Route::get('/AppendixThree',[AnnualTaxController::class, 'formF'])->name('formF');
-
     Route::get('/appendix/{number}', [AnnualTaxController::class, 'Appendix'])->name('appendix.show');
 
     Route::post('/store_AppendixThree', [AnnualTaxController::class, 'storeAppendixThree'])->name('AppendixThree.store');

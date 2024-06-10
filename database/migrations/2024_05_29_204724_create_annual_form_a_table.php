@@ -35,7 +35,7 @@ return new class extends Migration
             $table->enum('subsidiaryLiquidated', ['yes', 'no']);
             $table->enum('branchClosed', ['yes', 'no']);
             $table->enum('companyLiquidated', ['yes', 'no']);
-            $table->json('accountingSystem')->nullable(); // Storing as JSON array
+            $table->string('accountingSystem' )->nullable(); // Storing as JSON array
             $table->timestamps();
         });
     }
