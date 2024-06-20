@@ -1,11 +1,78 @@
 @extends('Taxpayer.AnnualTaxForm')
 
 @section('AppendixTen')
+@php
+    // Check if form data exists
+    $formData = \App\Models\AppendixTen::where('user_id', auth()->id())->get();
+
+@endphp
 <div class="custom-container mt-5">
     <br>
     <h5 colspan="5" class="text-center custom-header">Appendix # 10 Statement of Previous Losses</h5>
+    @if ($formData->isNotEmpty())
+    <form action="{{ route('updateAppendixTen') }}" method="POST">
+        @csrf
+        @method('PUT')
+        @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
+        @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+        @endif
+        <table class="table table-bordered custom-table form-table " id="loss-table">
+            <thead>
+            
+                <tr>
+                    <th>Code</th>
+                    <th>Year of Origin</th>
+                    <th>Year</th>
+                    <th>Original Loss</th>
+                    <th>Written offs in Previous Years</th>
+                    <th>Written offs in the Current Year</th>
+                    <th>Accumulated Loss Available for Subsequent Years (1,2,3)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (range(0, 5) as $index)
+                    <tr>
+                        <td>{{ 100 + ($index * 10) }}</td>
+                        <td>{{ ['Tax loss for the Year', 'Previous First Year', 'Previous Second Year', 'Previous Third Year', 'Previous Fourth Year', 'Previous Fifth Year'][$index] }}</td>
+                        <td><input type="text" name="year_one[]" class="form-control year" value="{{ $formData[$index]->year_one ?? '' }}"></td>
+                        <td><input type="text" name="original_loss_one[]" class="form-control" value="{{ $formData[$index]->original_loss_one ?? '' }}"></td>
+                        <td><input type="text" name="written_offs_previous_year_one[]" class="form-control" value="{{ $formData[$index]->written_offs_previous_year_one ?? '' }}"></td>
+                        <td><input type="text" name="written_offs_current_year_one[]" class="form-control written_offs_current_year" value="{{ $formData[$index]->written_offs_current_year_one ?? '' }}"></td>
+                        <td><input type="text" name="accumulated_loss_one[]" class="form-control" value="{{ $formData[$index]->accumulated_loss_one ?? '' }}"></td>
+                    </tr>
+                @endforeach
+                <tr class="footer-row">
+                    <td>200</td>
+                    <td colspan="4">Total</td>
+                    <td><input type="text" id="total" name="total" class="form-control" value="{{ $formData->sum('total') ?? '' }}" readonly></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <br>
+        <button type="submit" class="btn btn-primary">Update</button>
+        <button type="button" class="btn btn-info" id="prevButton">
+            <a href="{{ route('appendix.show', ['number' => 9]) }}">Previous</a>
+        </button>
+        <button type="button" class="btn btn-info" id="prevButton">
+            <a href="{{ route('appendix.show', ['number' => 11]) }}">Next</a>
+        </button>
+    </form>
+    @else
     <form action="{{ route('AppendixTen.store') }}" method="POST">
-    @csrf
+        @csrf
         @if ($errors->any())
         <div class="alert alert-danger">
             <ul>
@@ -99,7 +166,11 @@
 
         <br>
         <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="button" class="btn btn-info" id="prevButton">
+            <a href="{{ route('appendix.show', ['number' => 9]) }}">Previous</a>
+        </button>
     </form>
+    @endif
     <div class="note">
         <p><strong>Note:</strong></p>
         <small class="form-text text-muted mt-2">- The first years of loss shall be calculated as of the fiscal year in which the self-assignment system is applied, as no loss shall be counted prior to that year.</small>

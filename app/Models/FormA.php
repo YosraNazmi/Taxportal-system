@@ -13,17 +13,8 @@ class FormA extends Model
 
     protected $fillable = [
         'user_id',
-        'uen',
         'financialYearFrom',
         'financialYearTo',
-        'companyName',
-        'address',
-        'city',
-        'country',
-        'postalCode',
-        'phone1',
-        'phone2',
-        'email',
         'legalStructureChange',
         'legalStructureChangeDate',
         'newLegalStructure',

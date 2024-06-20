@@ -1,8 +1,115 @@
 @extends('Taxpayer.AnnualTaxForm')
 
 @section('AppendixTwenty')
+@php
+    // Check if form data exists
+    $formData = \App\Models\AppendixTwenty::where('user_id', auth()->id())->get();
+    $formData1 = \App\Models\AppendixTwentyB::where('user_id', auth()->id())->get();
+@endphp
 <div class="custom-container mt-5">
     <h5 class="custom-header">Appendix #20 Statement of Donations, Gifts, and Subsidies</h5>
+    @if ($formData->isNotEmpty() && $formData1->isNotEmpty())
+    <form action="{{route('updateAppendixTwenty')}}" method="POST">
+        @csrf
+        @method('PUT')
+        @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
+        @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+        @endif
+        <div class="table-container mt-4">
+            <table class="custom-table table-bordered table form-table " id="operations-table">
+                <thead >
+                    
+                    <tr>
+                        <th>code</th>
+                        <th>Tax Number</th>
+                        <th>Name of the Donation Receiver</th>
+                        <th>Govermetal Entity</th>
+                        <th>Value of Donations and Gifts</th>
+                        <th>Allowable Donations	</th>
+                        <th>Unauthorized Differences</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    @foreach ($formData as $index => $data)
+                    <tr>
+                        <td>100</td>
+                        <td><input type="text" name="tax_number[]" class="form-control" oninput="checkInputs()" value="{{ $data->tax_number }}"></td>
+                        <td><input type="text" name="name_of_donation[]" class="form-control" oninput="checkInputs()" value="{{ $data->name_of_donation }}"></td>
+                        <td class="text-center"><input  type="checkbox" name="govermental_entity[{{ $index }}]" id="incomeYes{{ $index }}" value="1" {{ $data->govermental_entity ? 'checked' : '' }}></td>
+                        <td><input type="number" name="value_of_donation[]" class="form-control" oninput="checkInputs()" value="{{ $data->value_of_donation }}"></td>
+                        <td><input type="text" name="allowable_dontations[]" class="form-control" oninput="checkInputs()" value="{{ $data->allowable_dontations }}"></td>
+                        <td><input type="number" name="unauthorized_differences_one[]" class="form-control" oninput="checkInputs()" value="{{ $data->unauthorized_differences_one }}"></td>
+                    </tr>
+                    @endforeach                    
+                    <!-- Add more rows as needed -->
+                    <tr class="footer-row">
+                        <td colspan="4" class="text-right total-cell">Total</td>
+                        <td><input type="number" name="total_1" class="form-control" id="total_amount1" readonly value="{{ $formData->sum('total_1') ?? '' }}"></td>
+                        <td><input type="number" name="total_2" class="form-control" id="total_amount2" readonly value="{{ $formData->sum('total_2') ?? '' }}"></td>
+                        <td><input type="number" name="total_3" class="form-control" id="total_amount3" readonly value="{{ $formData->sum('total_3') ?? '' }}"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <small class="form-text text-muted">
+                * Enter the total amount in line 210 of the statement of transition from the accounting result to the tax result											
+            </small>
+            <br>
+            <table class="custom-table table-bordered table form-table  " id="operations-table_two">
+                <thead >
+                    <tr>
+                        <th>code</th>
+                        <th>Tax Number</th>
+                        <th>Name of the Entity for which the Subsidy was Provided</th>
+                        <th>Value of Subsidies</th>
+                        <th>Allowable Allowances</th>
+                        <th>Unauthorized Differences</th>
+                    </tr>
+                </thead>
+                <tbody id="table">
+                    @foreach ($formData1 as $index => $data)
+                    <tr>
+                        <td>100</td>
+                        <td><input type="text" name="tax_number_1[]" class="form-control" oninput="checkInputs()" value="{{ $data->tax_number_1 }}"></td>
+                        <td><input type="text" name="name_of_entity[]" class="form-control" oninput="checkInputs()" value="{{ $data->name_of_entity }}"></td>
+                        <td><input type="number" name="value_subsidies[]" class="form-control" oninput="checkInputs()" value="{{ $data->value_subsidies }}"></td>
+                        <td><input type="text" name="allowable_allowances[]" class="form-control" oninput="checkInputs()" value="{{ $data->allowable_allowances }}"></td>
+                        <td><input type="number" name="unauthorized_differernce_1[]" class="form-control" oninput="checkInputs()" value="{{ $data->unauthorized_differernce_1 }}"></td>
+                    </tr>
+                    @endforeach
+                    <!-- Add more rows as needed -->
+                    <tr class="footer-row-two">
+                        <td colspan="3" class="text-right total-cell">Total</td>
+                        <td><input type="number" name="total_amount_1" class="form-control" id="total_amount_1" readonly value="{{ $formData1->sum('total_amount_1') ?? '' }}"></td>
+                        <td><input type="number" name="total_amount_2" class="form-control" id="total_amount_2" readonly value="{{ $formData1->sum('total_amount_2') ?? '' }}"y></td>
+                        <td><input type="number" name="total_amount_3" class="form-control" id="total_amount_3" readonly value="{{ $formData1->sum('total_amount_3') ?? '' }}"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button type="submit" class="btn btn-primary">Update</button>
+            <button type="button" class="btn btn-info" id="prevButton">
+                <a href="{{ route('appendix.show', ['number' => 19]) }}">Previous</a>
+            </button>
+            <button type="button" class="btn btn-info" id="prevButton">
+                <a href="{{ route('appendix.show', ['number' => 21]) }}">Next</a>
+            </button>
+        </div>
+        <small class="form-text text-muted mt-2">
+            ** Enter the total amount in line 220 of the statement of transistion from the accounting result to the tax result
+        </small>
+        
+    </form>
+    @else
     <form action="{{route('AppendixTwenty.store')}}" method="POST">
         @csrf
         @if ($errors->any())
@@ -37,10 +144,8 @@
                         <td>100</td>
                         <td><input type="text" name="tax_number[]" class="form-control" oninput="checkInputs()"></td>
                         <td><input type="text" name="name_of_donation[]" class="form-control" oninput="checkInputs()"></td>
-                        <td class="text-center">
-                            <div class="form-check">
-                                <input class="form-check-input"type="checkbox" name="govermental_entity[]" id="incomeYes1" value="1">
-                            </div>
+                        <td class="text-center">           
+                                <input type="checkbox" name="govermental_entity[]" id="incomeYes1" value="1">
                         </td>
                         <td><input type="number" name="value_of_donation[]" class="form-control" oninput="checkInputs()"></td>
                         <td><input type="text" name="allowable_dontations[]" class="form-control" oninput="checkInputs()"></td>
@@ -51,10 +156,8 @@
                         <td>110</td>
                         <td><input type="text" name="tax_number[]" class="form-control" oninput="checkInputs()"></td>
                         <td><input type="text" name="name_of_donation[]" class="form-control" oninput="checkInputs()"></td>
-                        <td class="text-center">
-                            <div class="form-check">
-                                <input class="form-check-input"type="checkbox" name="govermental_entity[]" id="incomeYes1" value="1">
-                            </div>
+                        <td class="text-center">           
+                            <input type="checkbox" name="govermental_entity[]" id="incomeYes1" value="1">
                         </td>
                         <td><input type="number" name="value_of_donation[]" class="form-control" oninput="checkInputs()"></td>
                         <td><input type="text" name="allowable_dontations[]" class="form-control" oninput="checkInputs()"></td>
@@ -112,12 +215,16 @@
                 </tbody>
             </table>
             <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="button" class="btn btn-info" id="prevButton">
+                <a href="{{ route('appendix.show', ['number' => 19]) }}">Previous</a>
+            </button>
         </div>
         <small class="form-text text-muted mt-2">
             ** Enter the total amount in line 220 of the statement of transistion from the accounting result to the tax result
         </small>
         
     </form>
+    @endif
 </div>
 
 <script>

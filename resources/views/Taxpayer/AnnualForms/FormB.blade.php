@@ -52,6 +52,7 @@
                 </div>
             </div>
         </div>
+        
         <!-- Section: Submission of the Declaration -->
         <div class="form-section">
             <h4>Submission of the Declaration</h4>
@@ -69,7 +70,7 @@
                 </div>
             </div>
         </div>
-
+        
         <!-- Section: Auditor Information -->
         <div class="form-section">
             <h4>Auditor who has approved the financial information</h4>
@@ -80,7 +81,7 @@
                 </div>
                 <div class="form-group col-md-4">
                     <label for="auditorPhone" class="form-label">Phone</label>
-                    <input type="phone" class="form-control" id="auditorPhone" name="auditorPhone">
+                    <input type="tel" class="form-control" id="auditorPhone" name="auditorPhone">
                 </div>
                 <div class="form-group col-md-4">
                     <label for="auditorEmail" class="form-label">Email</label>
@@ -93,6 +94,7 @@
                 </small>
             </div>
         </div>
+        
 
         <!-- Section: Administration Specific -->
         <div class="form-section">
@@ -116,6 +118,7 @@
                 </div>
             </div>
         </div>
+        
     
 
 <script>

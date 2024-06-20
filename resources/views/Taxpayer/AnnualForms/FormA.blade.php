@@ -62,11 +62,26 @@
         @endif
             <!--FormA input-->
             <div class="step step-1">
-                
                 <h3 class="mt-4">Income Tax Declaration for Companies</h3>
                 <br>
                 <div class="form-section">
-                    <div class="form-row">
+                    <div class="row">        
+                        <div class="form-group col-md-4">
+                            <label for="financialYearFrom" class="form-label">Financial Year From (Day, Month, Year)</label>
+                            <input type="date" class="form-control" id="financialYearFrom" name="financialYearFrom" required>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="financialYearTo" class="form-label">Financial Year To (Day, Month, Year)</label>
+                            <input type="date" class="form-control" id="financialYearTo" name="financialYearTo" required>
+                        </div>
+                    </div>
+                </div>
+                <br>
+              <!--  
+                
+                <br>
+                <div class="form-section">
+                    <div class="row">
                         <div class="form-group col-md-4">
                             <label for="taxNo" class="form-label">Tax No.</label>
                             <input type="text" class="form-control" id="taxNo" value="{{Auth::user()->uen }}" name="uen" required>
@@ -86,10 +101,10 @@
                     </div>
                 </div>
         
-                <!-- Section 2: Current Company Address -->
+                Section 2: Current Company Address 
                 <div class="form-section">
                     <h4>Current Company Address</h4>
-                    <div class="form-row">
+                    <div class="row">
                         <div class="form-group col-md-3">
                             <label for="address" class="form-label">Address</label>
                             <input type="text" class="form-control" id="address" value="{{Auth::user()->addressLine1 }}" name="address" required>
@@ -107,7 +122,7 @@
                             <input type="text" class="form-control" id="postalCode" value="{{Auth::user()->postalCode }}" name="postalCode" required>
                         </div>
                     </div>
-                    <div class="form-row">
+                    <div class="row">
                         <div class="form-group col-md-3">
                             <label for="phone1" class="form-label">Phone (1)</label>
                             <input type="text" class="form-control" id="phone1" value="{{Auth::user()->ePhoneNbr }}" name="phone1" required>
@@ -122,9 +137,10 @@
                         <input type="email" class="form-control" id="email" name="email" value="{{Auth::user()->email }}" required>
                     </div>
                 </div>
-
+                <br> -->
                 <!-- Section 4: Other Information -->
-                <div class="form-section">
+
+                <div class="form-section" id="legalStructureChangeSection">
                     <div class="form-group">
                         <label>Has company's legal structure changed during the year?</label>
                         <div class="form-check form-check-inline">
@@ -136,17 +152,15 @@
                             <label class="form-check-label" for="legalStructureChangeNo">No</label>
                         </div>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" id="legalStructureChangeFields">
                         <label for="legalStructureChangeDate" class="form-label">Change Date (Day, Month, Year)</label>
                         <input type="date" class="form-control" id="legalStructureChangeDate" name="legalStructureChangeDate">
-                    </div>
-                    <div class="form-group">
                         <label for="newLegalStructure" class="form-label">New Legal Structure</label>
                         <input type="text" class="form-control" id="newLegalStructure" name="newLegalStructure">
                     </div>
                 </div>
-        
-                <div class="form-section">
+                <br>
+                <div class="form-section" id="mainActivityChangeSection">
                     <div class="form-group">
                         <label>Has company's main activity changed during the year?</label>
                         <div class="form-check form-check-inline">
@@ -157,14 +171,14 @@
                             <input class="form-check-input" type="radio" name="mainActivityChange" id="mainActivityChangeNo" value="no" required>
                             <label class="form-check-label" for="mainActivityChangeNo">No</label>
                         </div>
-                        <div class="form-group">
-                            <label for="mainActivityChangeSpecify" class="form-label">Specify</label>
-                            <input type="text" class="form-control" id="mainActivityChangeSpecify" name="mainActivityChangeSpecify">
-                        </div>
+                    </div>
+                    <div class="form-group" id="mainActivityChangeFields">
+                        <label for="mainActivityChangeSpecify" class="form-label">Specify</label>
+                        <input type="text" class="form-control" id="mainActivityChangeSpecify" name="mainActivityChangeSpecify">
                     </div>
                 </div>
-        
-                <div class="form-section">
+                <br>
+                <div class="form-section" id="companyConsolidatedSection">
                     <div class="form-group">
                         <label>Has the company been consolidated during the year?</label>
                         <div class="form-check form-check-inline">
@@ -175,14 +189,14 @@
                             <input class="form-check-input" type="radio" name="companyConsolidated" id="companyConsolidatedNo" value="no" required>
                             <label class="form-check-label" for="companyConsolidatedNo">No</label>
                         </div>
-                        <div class="form-group">
-                            <label for="companyConsolidationDate" class="form-label">Consolidation Date (Day, Month, Year)</label>
-                            <input type="date" class="form-control" id="companyConsolidationDate" name="companyConsolidationDate">
-                        </div>
+                    </div>
+                    <div class="form-group" id="companyConsolidatedFields">
+                        <label for="companyConsolidationDate" class="form-label">Consolidation Date (Day, Month, Year)</label>
+                        <input type="date" class="form-control" id="companyConsolidationDate" name="companyConsolidationDate">
                     </div>
                 </div>
-        
-                <div class="form-section">
+                <br>
+                <div class="form-section" id="subsidiaryLiquidatedSection">
                     <div class="form-group">
                         <label>Has the subsidiary been liquidated during the current financial year?</label>
                         <div class="form-check form-check-inline">
@@ -194,6 +208,10 @@
                             <label class="form-check-label" for="subsidiaryLiquidatedNo">No</label>
                         </div>
                     </div>
+                    <!-- No additional fields for subsidiary liquidation -->
+                </div>
+                <br>
+                <div class="form-section" id="branchClosedSection">
                     <div class="form-group">
                         <label>Has any branch or office of the company been closed during the current financial year?</label>
                         <div class="form-check form-check-inline">
@@ -205,6 +223,10 @@
                             <label class="form-check-label" for="branchClosedNo">No</label>
                         </div>
                     </div>
+                    <!-- No additional fields for branch closure -->
+                </div>
+                <br>
+                <div class="form-section" id="activitiesAbroadSection">
                     <div class="form-group">
                         <label>Did the company carry out any activities abroad during the current financial year?</label>
                         <div class="form-check form-check-inline">
@@ -215,12 +237,13 @@
                             <input class="form-check-input" type="radio" name="companyLiquidated" id="activitiesAbroadNo" value="no" required>
                             <label class="form-check-label" for="activitiesAbroadNo">No</label>
                         </div>
-                        <div class="form-group">
-                            <label for="accountingSystem" class="form-label">If yes, specify the country</label>
-                            <input type="text" class="form-control" id="accountingSystem" name="accountingSystem">
-                        </div>
+                    </div>
+                    <div class="form-group" id="activitiesAbroadFields">
+                        <label for="accountingSystem" class="form-label">If yes, specify the country</label>
+                        <input type="text" class="form-control" id="accountingSystem" name="accountingSystem">
                     </div>
                 </div>
+                <br>
         
                 <br>
                 <button type="button" class="btn btn-primary next-step">Next</button>   
@@ -233,6 +256,7 @@
                 <h3 class="mt-4">Income Tax Declaration for Companies</h3>
                 <!-- Section 10-17: Tax Calculation -->
                 <div class="form-section">
+                    <br>
                     <h5>Tax Calculation</h5>
                     <div class="form-group row">
                         <label for="netTaxableIncome" class="col-sm-6 col-form-label">10. Net taxable income (transition statement: appendix no 3 - Line 600)</label>
@@ -240,55 +264,65 @@
                             <input type="text" class="form-control" id="netTaxableIncome" name="netTaxableIncome" value="{{$netTaxableIncome}}">
                         </div>
                     </div>
+                    <br>
                     <div class="form-group row">
                         <label for="previousYearsLosses" class="col-sm-6 col-form-label">11. Previous years losses (appendix no 10)</label>
                         <div class="col-sm-6">
                             <input type="text" class="form-control highlight" id="previousYearsLosses"  name="previousYearsLosses" value="{{$previousYearsLosses}}">
                         </div>
                     </div>
+                    <br>
                     <div class="form-group row">
                         <label for="taxableIncome" class="col-sm-6 col-form-label">12. Taxable income</label>
                         <div class="col-sm-6">
                             <input type="text" class="form-control highlight" id="taxableIncome" name="taxableIncome">
                         </div>
                     </div>
+                    <br>
                     <div class="form-group row">
                         <label for="taxRatio" class="col-sm-6 col-form-label">13. Tax ratio</label>
                         <div class="col-sm-6">
                             <input type="text" class="form-control" id="taxRatio" name="taxRatio" value="15%" readonly>
                         </div>
                     </div>
+                    <br>
                     <div class="form-group row">
                         <label for="toBePaidTax" class="col-sm-6 col-form-label">14. To be paid tax</label>
                         <div class="col-sm-6">
                             <input type="text" class="form-control highlight" id="toBePaidTax" name="toBePaidTax" value="0">
                         </div>
                     </div>
+                    <br>
                     <div class="form-group row">
                         <label for="foreignTaxAdoption" class="col-sm-6 col-form-label">15. Adoption of foreign tax (appendix no 26)</label>
                         <div class="col-sm-6">
                             <input type="text" class="form-control highlight" id="foreignTaxAdoption" name="foreignTaxAdoption" value="{{$foreignTaxAdoption}}">
                         </div>
                     </div>
+                    <br>
                     <div class="form-group row">
                         <label for="taxDeducted" class="col-sm-6 col-form-label">16. Tax deducted from transactions during tax year (appendix no 27)</label>
                         <div class="col-sm-6">
                             <input type="text" class="form-control" id="taxDeducted" name="taxDeducted" value="{{$taxDeducted}}">
                         </div>
                     </div>
+                    <br>
                     <div class="form-group row">
                         <label for="netPayableTax" class="col-sm-6 col-form-label">17. Net payable tax</label>
                         <div class="col-sm-6">
                             <input type="text" class="form-control highlight" id="netPayableTax" name="netPayableTax">
                         </div>
                     </div>
+                    <br>
                 </div>
+                <br>
                 <!-- Section: Submission of the Declaration -->
                 <div class="form-section">
                     <h4>Submission of the Declaration</h4>
                     <div class="form-group">
                         <label>Name and signature of the executive manager responsible for the accuracy and completeness of the information included in this declaration with its annexes.</label>
-                        <div class="form-row">
+                        
+                        <div class="row">
                             <div class="form-group col-md-6">
                                 <label for="execManagerName" class="form-label">Name</label>
                                 <input type="text" class="form-control" id="execManagerName" name="execManagerName">
@@ -300,35 +334,37 @@
                         </div>
                     </div>
                 </div>
-        
+                <br>
                 <!-- Section: Auditor Information -->
                 <div class="form-section">
                     <h4>Auditor who has approved the financial information</h4>
-                    <div class="form-row">
+                    <div class="row">
                         <div class="form-group col-md-4">
                             <label for="auditorName" class="form-label">Name</label>
                             <input type="text" class="form-control" id="auditorName" name="auditorName">
                         </div>
                         <div class="form-group col-md-4">
                             <label for="auditorPhone" class="form-label">Phone</label>
-                            <input type="phone" class="form-control" id="auditorPhone" name="auditorPhone">
+                            <input type="tel" class="form-control" id="auditorPhone" name="auditorPhone">
                         </div>
                         <div class="form-group col-md-4">
                             <label for="auditorEmail" class="form-label">Email</label>
                             <input type="email" class="form-control" id="auditorEmail" name="auditorEmail">
                         </div>
                     </div>
+                    <br>
                     <div class="form-group">
                         <small class="form-text text-muted">
                             Note: The inaccuracy of the information provided in this declaration leads to penalty of the article no (8) in the resolution no. (102) for the year 2017.
                         </small>
                     </div>
                 </div>
+                <br>
         
                 <!-- Section: Administration Specific -->
                 <div class="form-section">
                     <h4>Administration Specific</h4>
-                    <div class="form-row">
+                    <div class="row">
                         <div class="form-group col-md-3">
                             <label for="inwardNumber" class="form-label">Inward number in the declarations documents</label>
                             <input type="text" class="form-control" id="inwardNumber" name="inwardNumber">
@@ -347,6 +383,8 @@
                         </div>
                     </div>
                 </div>
+                <br>
+            
             
                 <br>
                 <button type="button" class="btn btn-primary prev-step">Previous</button>
@@ -425,48 +463,35 @@
 </script>
 
 <script>
-        document.addEventListener("DOMContentLoaded", function() {
-        const legalStructureChangeYes = document.getElementById("legalStructureChangeYes");
-        const legalStructureChangeNo = document.getElementById("legalStructureChangeNo");
-        const mainActivityChangeYes = document.getElementById("mainActivityChangeYes");
-        const mainActivityChangeNo = document.getElementById("mainActivityChangeNo");
-        const companyConsolidatedYes = document.getElementById('companyConsolidatedYes');
-        const companyConsolidatedNo = document.getElementById('companyConsolidatedNo');
+    document.addEventListener("DOMContentLoaded", function() {
+        // Function to toggle visibility of fields for each section
+        function toggleSectionFields(sectionName, fieldIds) {
+            const sectionYes = document.getElementById(sectionName + 'Yes');
+            const sectionNo = document.getElementById(sectionName + 'No');
+            const sectionFields = document.getElementById(sectionName + 'Fields');
 
-        legalStructureChangeYes.addEventListener('change', function() {
-            toggleOptionalFields('legalStructureChangeYes', ['legalStructureChangeDate', 'newLegalStructure']);
-        });
-        legalStructureChangeNo.addEventListener('change', function() {
-            toggleOptionalFields('legalStructureChangeYes', ['legalStructureChangeDate', 'newLegalStructure']);
-        });
+            function toggleFields() {
+                sectionFields.style.display = sectionYes.checked ? 'block' : 'none';
+            }
 
-        mainActivityChangeYes.addEventListener('change', function() {
-            toggleOptionalFields('mainActivityChangeYes', ['mainActivityChangeSpecify']);
-        });
-        mainActivityChangeNo.addEventListener('change', function() {
-            toggleOptionalFields('mainActivityChangeYes', ['mainActivityChangeSpecify']);
-        });
+            // Add event listeners to the radio buttons
+            sectionYes.addEventListener('change', toggleFields);
+            sectionNo.addEventListener('change', toggleFields);
 
-        companyConsolidatedYes.addEventListener('change', function() {
-            toggleOptionalFields('companyConsolidatedYes', ['companyConsolidationDate']);
-        });
-        companyConsolidatedNo.addEventListener('change', function() {
-            toggleOptionalFields('companyConsolidatedNo', ['companyConsolidationDate']);
-        });
-
-        function toggleOptionalFields(radioButtonId, fieldIds) {
-            const isVisible = document.getElementById(radioButtonId).checked;
-            fieldIds.forEach(fieldId => {
-                document.getElementById(fieldId).style.display = isVisible ? 'block' : 'none';
-            });
+            // Initial state check
+            toggleFields();
         }
 
-        toggleOptionalFields('legalStructureChangeYes', ['legalStructureChangeDate', 'newLegalStructure']);
-        toggleOptionalFields('mainActivityChangeYes', ['mainActivityChangeSpecify']);
-        toggleOptionalFields('companyConsolidatedYes', ['companyConsolidationDate']);
+        // Call toggleSectionFields for each section with their respective field IDs
+        toggleSectionFields('legalStructureChange', ['legalStructureChangeDate', 'newLegalStructure']);
+        toggleSectionFields('mainActivityChange', ['mainActivityChangeSpecify']);
+        toggleSectionFields('companyConsolidated', ['companyConsolidationDate']);
+        toggleSectionFields('subsidiaryLiquidated', []); // No additional fields for subsidiary liquidation
+        toggleSectionFields('branchClosed', []); // No additional fields for branch closure
+        toggleSectionFields('activitiesAbroad', ['accountingSystem']);
     });
-
 </script>
+
 
 
 

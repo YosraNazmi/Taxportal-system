@@ -28,6 +28,7 @@ class TaxpayerFormController extends Controller
     public function NewFormPost(Request $request)
     {
         try {
+            Log::info('I am here');
             $request->validate([
             'taxpayer' => 'required',
             'propertyyearfrom' => 'required',
@@ -60,7 +61,7 @@ class TaxpayerFormController extends Controller
             'blanace' => 'required',
             'remainingbalance' => 'required',
             'tobepaid' => 'required',
-            'agreeCheckbox' => 'required',
+            'agreeCheckbox' => 'accepted',
             ]);
 
             $data = $request->only([
@@ -95,9 +96,8 @@ class TaxpayerFormController extends Controller
 
             //$tobepaid = floatval($request->input('paidamount')) - floatval($request->input('blanace')) - floatval($request->input('remainingbalance'));
             //$data['tobepaid'] = $tobepaid;
-
-            $agreeCheckbox = $request->input('agreeCheckbox', false);
-            $data['agreeCheckbox']= $agreeCheckbox;
+            $agreeCheckbox = filter_var($request->input('agreeCheckbox'), FILTER_VALIDATE_BOOLEAN);
+            $data['agreeCheckbox'] = $agreeCheckbox;
             
             // Check if the user has already applied for the selected quarter
             $existingForm = Form::where('user_id', Auth::id())
@@ -124,7 +124,7 @@ class TaxpayerFormController extends Controller
              // Save the payment record
             $payment->save();
 
-            Log::debug('Payment ID: ' . $payment->id);
+            
 
             // Validate and process the form data
             $formReferenceNumber = $form->form_reference;
@@ -192,53 +192,16 @@ class TaxpayerFormController extends Controller
     }
 
     public function autoSave(Request $request)
-    {   
-        $validatedData = $request->validate([
-        'taxpayer' => 'required',
-            'propertyyearfrom' => 'required',
-            'propertuyearto' => 'required',
-            'uen' => 'required',
-            'quarter' => 'required', 
-            'seasonfromDate' => 'required',
-            'seasontoDate' => 'required',
-            'representativename' => 'required',
-            'upn' => 'required',
-            'position' => 'required',
-            'phone' => 'required',
-            'numberofEmployee' => 'required',
-            'salaryandwages' => 'required',
-            'Allowancess' => 'required',
-            'bonus' => 'required',
-            'total' => 'required',
-            'retire' => 'required',
-            'Gallowances' => 'required',
-            'summary' => 'required',
-            'examptions' => 'required',
-            'taxAmount' => 'required',
-            'dueTax' => 'required',
-            'delayone' => 'required',
-            'dalaytwo' => 'required',
-            'dalaythree' => 'required',
-            'totaloftaxpen' => 'required',
-            'delayinterest' => 'required',
-            'paidamount' => 'required',
-            'blanace' => 'required',
-            'remainingbalance' => 'required',
-            'tobepaid' => 'required',
-            'agreeCheckbox' => 'required',
-            ]);
-        try {
-            $formData = $validatedData;
-            Form::updateOrCreate(
-                ['user_id' => Auth::id()],
-                $formData
-            );
-            
-            return response()->json(['success' => true]);
-        } catch (\Exception $e) {
-            Log::error($e);
-            return response()->json(['success' => false, 'error' => 'Autosave failed. Please try again.'], 500);
-        }
+    {
+        // Assuming you have a model called FormData and a method to save data
+        // You might need to adapt this part according to your specific requirements
+
+        $formData = Form::updateOrCreate(
+            ['user_id' => Auth::id()], // Unique identifier for the form, e.g., user_id
+            $request->all()
+        );
+
+        return response()->json(['success' => true]);
     }
 
     

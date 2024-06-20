@@ -10,28 +10,33 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <title>Tax Home Portal</title>
 </head>
+
 <body>
-    <header id="header" class="d-flex align-items-center">
-        <div class="container d-flex align-items-center">
-    
-          <h1 class="logo me-auto"><a href="home.blade.php">Tax</a></h1>
-          <!-- Uncomment below if you prefer to use an image logo -->
-          <!-- <a href="index.html" class="logo me-auto"><img src="assets/img/logo.png" alt="" class="img-fluid"></a>-->
-    
-          <nav id="navbar" class="navbar">
-            <ul>
-              <li><a class="nav-link scrollto active" href="#hero">Home</a></li>
-              <li><a class="nav-link scrollto" href="/about">About</a></li>
-              <li><a class="nav-link scrollto" href="/services">Services</a></li>
-              <li><a class="nav-link scrollto" href="/contact">Contact</a></li>
-              <li><a class="nav-link scrollto" href="/login" target="_blank">Login</a></li>
-              <li><a class="nav-link scrollto" href="/register" target="_blank">Sign up</a></li>
-            </ul>
-            <i class="bi bi-list mobile-nav-toggle"></i>
-          </nav><!-- .navbar -->
-    
-        </div>
-    </header><!-- End Header -->
+  <header id="header" class="d-flex align-items-center">
+    <div class="container d-flex align-items-center justify-content-between">
+
+        <h1 class="logo me-auto"><a href="{{route('welcome')}}">Tax</a></h1>
+        
+        <nav id="navbar" class="navbar navbar-expand-lg navbar-light bg-light bg-white">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class=" navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link scrollto active" href="#hero">Home</a></li>
+                    <li class="nav-item"><a class="nav-link scrollto" href="/about">About</a></li>
+                    <li class="nav-item"><a class="nav-link scrollto" href="/services">Services</a></li>
+                    <li class="nav-item"><a class="nav-link scrollto" href="/contact">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link scrollto" href="/login" target="_blank">Login</a></li>
+                    <li class="nav-item"><a class="nav-link scrollto" href="/register" target="_blank">Sign up</a></li>
+                </ul>
+            </div>
+        </nav>
+          
+      </div>
+  </header>
+
+
 
     <!-- Page Content -->
     <div class="">
@@ -59,4 +64,17 @@
 </body>
 <script src="{{asset('js/bootstrap.bundle.min.js')}}"></script>
 <script src="{{asset('js/jquery.js')}}"></script>
+<script>
+ document.addEventListener("DOMContentLoaded", function() {
+    const mobileNavToggle = document.getElementById('mobile-nav-toggle');
+    const navbar = document.getElementById('navbar');
+
+    console.log("JavaScript loaded."); // Debugging statement
+
+    mobileNavToggle.addEventListener('click', function() {
+        navbar.classList.toggle('active');
+        console.log("Toggle button clicked."); // Debugging statement
+    });
+});
+</script>
 </html>

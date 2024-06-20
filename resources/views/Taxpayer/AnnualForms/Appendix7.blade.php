@@ -1,10 +1,128 @@
 @extends('Taxpayer.AnnualTaxForm')
 
 @section('AppendixSeven')
+@php
+    // Fetch the form data for the user
+    $formData = \App\Models\AppendixSeven::where('user_id', auth()->id())->first();
+
+    // Fetch intangible assets for the user's AppendixSeven
+    $inTangibleAssets = collect();
+    if ($formData) {
+        $inTangibleAssets = collect($formData->inTangibleAssets);
+    }
+    $totals = [
+        'total_book_value_beginning' => $inTangibleAssets->sum('book_value_beginning'),
+        'total_cost_of_acquisition' => $inTangibleAssets->sum('cost_of_acquisition'),
+        'total_cost_of_assets_sold' => $inTangibleAssets->sum('cost_of_assets_sold'),
+        'total_total_consumption_allowed' => $inTangibleAssets->sum('total_consumption_allowed'),
+        'total_depreciation_of_assets_sold' => $inTangibleAssets->sum('depreciation_of_assets_sold'),
+        'total_book_value_end' => $inTangibleAssets->sum('book_value_end'),
+    ];
+@endphp
+
 <div class="custom-container mt-5">
     <br>
     <h5 class="text-center custom-header">Appendix #7 Expiration Statement of Intangible Assets (Other than Land)</h5>
+    @if ($formData || $inTangibleAssets->isNotEmpty())
 
+    <form action="{{route('updateAppendixSeven')}}" method="POST">
+        @csrf
+        @method('PUT')
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+        <!-- Display success message -->
+        @if (session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+        <div class="form-group row mt-4">
+            <label class="col-md-4 col-form-label mt-4">Depreciation value according to the income statement:</label>
+            <div class="col-md-4 mt-4">
+                <input type="text" name="depreciation_value" class="form-control" placeholder="Enter Depreciation value" value="{{ old('depreciation_value', $formData->depreciation_value ?? '') }}">
+            </div>
+        </div>   
+        <hr>
+        <div class="form-group row">
+            <label class="col-sm-3 col-form-label">Expiration method selected for income tax purposes (select one)</label>
+            <div class="col-sm-9">
+                <div class="form-check">
+                    <input class="" type="checkbox" id="method1" name="continuous_installment" value="Continuous installment method" @if (isset($formData) && $formData->continuous_installment) checked @endif>
+                    <label class="form-check-label" for="method1">
+                        Continuous installment method
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="" type="checkbox" id="method2" name="decreasing_installment" value="The decreasing installment method" @if (isset($formData) && $formData->decreasing_installment) checked @endif>
+                    <label class="form-check-label" for="method2">
+                        The decreasing installment method
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="" type="checkbox" id="method3" name="another_method_administration" value="Another method with the approval of the tax administration" @if (isset($formData) && $formData->another_method_administration) checked @endif>
+                    <label class="form-check-label" for="method3">
+                        Another method with the approval of the tax administration
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <table class="table table-bordered custom-table">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Type of Intangible Assets (Name)(1)</th>
+                    <th>Book Value at the Beginning of the Year(2)</th>
+                    <th>Cost of Acquisition during the year (new intangible assets must be available for use)(3)</th>
+                    <th>Cost of Intangible Assets Sold or Written off During the Year(4)</th>
+                    <th>Total Consumption Allowed in the in Effect Depreciation System for the Year (5)</th>
+                    <th>Depreciation of Intangible Assets Sold or Written off During the Year(6)</th>
+                    <th>Book Value at the End of Year (3+4+5+6+7) (8)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($inTangibleAssets as $index => $data)
+                <tr>
+                    <td>{{ $data->code }}</td>
+                    <td><input type="text" name="type_of_intangible_assets[]" class="form-control" value="{{ $data->type_of_intangible_assets }}"></td>
+                    <td><input type="text" name="book_value_beginning[]" class="form-control" value="{{ $data->book_value_beginning }}"></td>
+                    <td><input type="text" name="cost_of_acquisition[]" class="form-control" value="{{ $data->cost_of_acquisition }}"></td>
+                    <td><input type="text" name="cost_of_assets_sold[]" class="form-control" value="{{ $data->cost_of_assets_sold }}"></td>
+                    <td><input type="text" name="total_consumption_allowed[]" class="form-control" value="{{ $data->total_consumption_allowed }}"></td>
+                    <td><input type="text" name="depreciation_of_assets_sold[]" class="form-control" value="{{ $data->depreciation_of_assets_sold }}"></td>
+                    <td><input type="text" name="book_value_end[]" class="form-control" value="{{ $data->book_value_end }}"></td>
+                </tr>
+                @endforeach
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td>200 Total</td>
+                    <td></td>
+                    <td><input type="number" name="total_book_value_beginning" id="total_book_value_beginning" class="form-control" readonly value="{{ $totals['total_book_value_beginning'] }}"></td>
+                    <td><input type="number" name="total_cost_of_acquisition" id="total_cost_of_acquisition" class="form-control" readonly value="{{ $totals['total_cost_of_acquisition'] }}"></td>
+                    <td><input type="number" name="total_cost_of_assets_sold" id="total_cost_of_assets_sold" class="form-control" readonly value="{{ $totals['total_cost_of_assets_sold'] }}"></td>
+                    <td><input type="number" name="total_total_consumption_allowed" id="total_total_consumption_allowed" class="form-control" readonly value="{{ $totals['total_total_consumption_allowed'] }}"></td>
+                    <td><input type="number" name="total_depreciation_of_assets_sold" id="total_depreciation_of_assets_sold" class="form-control" readonly value="{{ $totals['total_depreciation_of_assets_sold'] }}"></td>
+                    <td><input type="number" name="total_book_value_end" id="total_book_value_end" class="form-control" readonly value="{{ $totals['total_book_value_end'] }}"></td>
+                </tr>
+            </tfoot>
+        </table>
+        <button type="submit" class="btn btn-primary">Update</button>
+        <button type="button" class="btn btn-info" id="prevButton">
+            <a href="{{ route('appendix.show', ['number' => 6]) }}">Previous</a>
+        </button>
+        <button type="button" class="btn btn-info" id="prevButton">
+            <a href="{{ route('appendix.show', ['number' => 8]) }}">Next</a>
+        </button>
+    </form>
+    @else
     <form action="{{ route('AppendixSeven.store') }}" method="POST">
         @csrf
         @if ($errors->any())
@@ -112,7 +230,10 @@
             </tfoot>
         </table>
         <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="button" class="btn btn-info" id="prevButton" ><a href="{{ route('appendix.show', ['number' => 6]) }}">Previous</a></button>
+        
     </form>
+    @endif
     <br>
     <small class="form-text text-muted mt-2">* Enter the amount that is included in the statement of income for the amortization of the tangible assets in line 120 of the statement of transition from the accounting result to the tax result.</small>
     <small class="form-text text-muted mt-2">** Enter the total amount of column #6 in line 400 of the statement of transition from the accounting result to the tax result.</small>

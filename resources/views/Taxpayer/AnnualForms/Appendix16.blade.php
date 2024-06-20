@@ -1,9 +1,68 @@
 @extends('Taxpayer.AnnualTaxForm')
 
 @section('AppendixSixteen')
+@php
+    // Check if form data exists
+    $formData = \App\Models\AppendixSixteen::where('user_id', auth()->id())->get();
+@endphp
 <div class="custom-container mt-5">
     <br>
     <h5 class="text-center custom-header">Appendix #16  Statement of Operations and Payments to non-Residents in Kurdistan</h5>
+    @if ($formData->isNotEmpty())
+    <form action="{{route('updateAppendixSixteen')}}" method="POST">
+        @csrf
+        @method('PUT')
+        @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
+        @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+        @endif
+        
+        <table  class="table table-bordered custom-table form-table " id="operations-table">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Company Name</th>
+                    <th>Address</th>
+                    <th>Batch Code</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                @foreach ($formData as $index => $data)
+                <tr>
+                    <td>100</td>        
+                    <td><input type="text" name="company_name[]" class="form-control" oninput="checkInputs()" value="{{ $data->company_name }}"></td>
+                    <td><input type="text" name="address[]" class="form-control" oninput="checkInputs()" value="{{ $data->address }}"></td>
+                    <td><input type="text" name="batch_code[]" class="form-control" oninput="checkInputs()" value="{{ $data->batch_code }}"></td>
+                    <td><input type="text" name="value[]" class="form-control" oninput="checkInputs()" value="{{ $data->value }}"></td>
+                </tr>
+                @endforeach
+                <tr class="footer-row">
+                    <td>200</td>
+                    <td colspan="3">Total</td>
+                    <td><input type="text" id="total_1" name="total_1" class="form-control" value="{{ $formData->sum('total_1') ?? '' }}" readonly></td>
+                </tr>
+            </tbody>
+        </table>
+        <button type="submit" class="btn btn-primary">Update</button>
+        <button type="button" class="btn btn-info" id="prevButton">
+            <a href="{{ route('appendix.show', ['number' => 15]) }}">Previous</a>
+        </button>
+        <button type="button" class="btn btn-info" id="prevButton">
+            <a href="{{ route('appendix.show', ['number' => 17]) }}">Next</a>
+        </button>
+    </form>
+    @else
     <form action="{{route('AppendixSixteen.store')}}" method="POST">
         @csrf
         @if ($errors->any())
@@ -62,20 +121,27 @@
         </table>
 
         <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="button" class="btn btn-info" id="prevButton">
+            <a href="{{ route('appendix.show', ['number' => 15]) }}">Previous</a>
+        </button>
     </form>
+    @endif
     <div class="note">
         <p><strong>Batch Code:</strong></p>
-        <small class="form-text text-muted mt-2">1- Fees</small>
-        <small class="form-text text-muted mt-2">2- Rents</small>
-        <small class="form-text text-muted mt-2">3- Administrative Expenses</small>
-        <small class="form-text text-muted mt-2">4- Brokerage Expenses</small>
-        <small class="form-text text-muted mt-2">5- Technical Assistance Expenditures</small>
-        <small class="form-text text-muted mt-2">6- Research, Development and Consultancy Expenses</small>
-        <small class="form-text text-muted mt-2">7- Interests</small>
-        <small class="form-text text-muted mt-2">8- Dividend Distribution</small>
-        <small class="form-text text-muted mt-2">9- Administrative Services	</small>
-        <small class="form-text text-muted mt-2">10- Hardware and Equipment	</small>
-        <small class="form-text text-muted mt-2">11- Designs</small>    
+        <ul>
+            <li><small class="form-text text-muted mt-2">1- Fees</small></li>
+            <li><small class="form-text text-muted mt-2">2- Rents</small></li>
+            <li><small class="form-text text-muted mt-2">3- Administrative Expenses</small></li>
+            <li><small class="form-text text-muted mt-2">4- Brokerage Expenses</small></li>
+            <li> <small class="form-text text-muted mt-2">5- Technical Assistance Expenditures</small></li>
+            <li><small class="form-text text-muted mt-2">6- Research, Development and Consultancy Expenses</small></li>
+            <li> <small class="form-text text-muted mt-2">7- Interests</small></li>
+            <li><small class="form-text text-muted mt-2">8- Dividend Distribution</small></li>
+            <li><small class="form-text text-muted mt-2">9- Administrative Services	</small></li>
+            <li>  <small class="form-text text-muted mt-2">10- Hardware and Equipment	</small></li>
+            <li> <small class="form-text text-muted mt-2">11- Designs</small>    </li>
+            
+        </ul>
     </div>
     
 </div>

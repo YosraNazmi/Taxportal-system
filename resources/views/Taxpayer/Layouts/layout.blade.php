@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+   
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link href="{{asset('css/bootstrap.min.css')}}" rel="stylesheet"/>
     <link rel="stylesheet" href="{{asset('css/style.css')}}">
@@ -21,60 +22,54 @@
     }
 </style>
 <body>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light bg-white shadow">
-            <div class="container-fluid">
-                <div class="d-flex align-items-center justify-content-between w-100">
-                    <a href="{{route('tp.dashboard')}}"><h3>Tax</h3></a>
-                    <div class="d-flex align-items-center">
-                        <ul class="navbar-nav">
-                            
-                            <li class="nav-item">
-                                <a>
-                                    UEN: {{ auth()->check() ? auth()->user()->uen : '' }} 
-                                    <i class="bi bi-bookmark-star-fill @if(auth()->check() && auth()->user()->approval_type == 'PIT') pit-uen @else lto-uen @endif"></i>
-                                </a>
-                            </li>
-                            &nbsp;&nbsp;
-                            <li class="nav-item dropdown">
-                                <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
-                                    <i class="bi bi-bell"></i>
-                                    @auth
-                                        <span class="badge bg-primary badge-number">0</span>
-                                    @endauth
-                                </a>
-                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                
-                                    <a class="dropdown-item" href="#"></a>
-                                </div>
-                            </li>
-                                                                   
-                            <!-- User Account Dropdown -->
-                            &nbsp;&nbsp;
-                            <li class="nav-item dropdown no-arrow">
-                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                   data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                   <i class="bi bi-person-circle"></i>
-                                </a>
-                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                    <h6 class="dropdown-header">
-                                        @auth
-                                            {{ auth()->user()->firstname }} {{ auth()->user()->lastname }}
-                                        @endauth
-                                    </h6>
-                                    <a class="dropdown-item d-flex align-items-center"  href="{{route('showRepresentative')}}">
-                                        Add Representative
-                                     </a>
-                                    <a class="dropdown-item d-flex align-items-center"  href="{{ route('userLogout') }}">
-                                        Logout
-                                     </a>
-                                </div>
-                            </li>
-                            
-                        </ul>
-                    </div>
-                </div>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light bg-white shadow">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ route('tp.dashboard') }}" style="padding-left: 50px"><h3>Tax</h3></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav" style="padding-right:30px">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            UEN: {{ auth()->check() ? auth()->user()->uen : '' }}
+                            <i class="bi bi-bookmark-star-fill @if(auth()->check() && auth()->user()->approval_type == 'PIT') pit-uen @else lto-uen @endif"></i>
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
+                            <i class="bi bi-bell"></i>
+                            @auth
+                                <span class="badge bg-primary badge-number">0</span>
+                            @endauth
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown">
+                            <a class="dropdown-item" href="#"></a>
+                        </div>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="bi bi-person-circle"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <h6 class="dropdown-header">
+                                @auth
+                                    {{ auth()->user()->firstname }} {{ auth()->user()->lastname }}
+                                @endauth
+                            </h6>
+                            <a class="dropdown-item d-flex align-items-center" href="{{ route('showRepresentative') }}">
+                                Add Representative
+                            </a>
+                            <a class="dropdown-item d-flex align-items-center" href="{{ route('userLogout') }}">
+                                Logout
+                            </a>
+                        </div>
+                    </li>
+                </ul>
             </div>
-        </nav>          
+        </div>
+    </nav>
+            
 
     <div class="container">
         @yield('TPDashboard')

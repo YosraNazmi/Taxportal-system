@@ -14,17 +14,8 @@ return new class extends Migration
         Schema::create('annual_form_a', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('uen');
             $table->date('financialYearFrom');
             $table->date('financialYearTo');
-            $table->string('companyName');
-            $table->string('address');
-            $table->string('city');
-            $table->string('country');
-            $table->string('postalCode', 10);
-            $table->string('phone1', 20);
-            $table->string('phone2', 20)->nullable();
-            $table->string('email');
             $table->enum('legalStructureChange', ['yes', 'no']);
             $table->date('legalStructureChangeDate')->nullable();
             $table->string('newLegalStructure')->nullable();

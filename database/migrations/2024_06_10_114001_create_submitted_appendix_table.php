@@ -11,15 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('appendix_four', function (Blueprint $table) {
+        Schema::create('submitted_appendix', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('corporation')->nullable();
-            $table->string('tax_number')->nullable();
-            $table->string('nationality')->nullable();
-            $table->string('legal_form')->nullable();;
-            $table->decimal('ownership_ratio', 5, 2)->nullable();
-            $table->decimal('ownershipRatio', 5, 2)->nullable();
+            $table->foreignId('appendix_four_id')->constrained('appendix_four')->onDelete('cascade');
+            $table->foreignId('appendix_five_id')->constrained('appendix_five')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -29,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('appendix_four');
+        Schema::dropIfExists('submitted_appendix');
     }
 };

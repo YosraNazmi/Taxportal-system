@@ -1,7 +1,6 @@
 @extends('Taxpayer.Layouts.layout')
 
 @section('AnnualTaxForm')
-<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
     .custom-table {
@@ -32,7 +31,11 @@
     input{
        border-bottom: 1px solid #007BFF !important; 
        border: none !important;
+       /*margin: 10px !important;*/
     }
+    input[readonly] {
+    background-color: #EAECEE;
+}
     .custom-container {
         max-width: 960px; /* Customize this value as needed */
         margin: 0 auto;
@@ -68,21 +71,26 @@
                     <div class="menu">
                         <a href="{{ route('formA') }}">1. Corporate Income Tax Declaration</a>
                         <a href="{{ route('appendixOne') }}">2. Appendix 1 Budget Statement</a>
-                        <a href="{{route('appendixTwo')}}">3. Appendix 2 Income Statement</a>
-                        <a data-bs-toggle="collapse" href="#collapseTaxpayer" role="button" aria-expanded="false" aria-controls="collapseTaxpayer">4. Appendix Forms</i>
-                        </a>
+                        <a href="{{ route('appendixTwo') }}">3. Appendix 2 Income Statement</a>
+                        <a data-bs-toggle="collapse" href="#collapseTaxpayer" role="button" aria-expanded="false" aria-controls="collapseTaxpayer">4. Appendix Forms</a>
                         <ul class="collapse" id="collapseTaxpayer">
                             @foreach(range(4, 27) as $i)
-                                <li><a  href="{{ route('appendix.show', ['number' => $i]) }}">Appendix {{ $i }} </a></li>
+                                <li>
+                                    <a id="appendix{{ $i }}" href="{{ route('appendix.show', ['number' => $i]) }}">
+                                        Appendix {{ $i }}
+                                    </a>
+                                </li>
                             @endforeach
-                        </ul>
-                        <a href="{{route('formF')}}">5. Appendix 3 Transitioning from Accounting to Tax Results</a>
-                        <a href="{{route('formC')}}">6. Annexes for the Income tax of Companies</a>
+                        </ul>                                            
+                        <a href="{{ route('formF') }}">5. Appendix 3 Transitioning from Accounting to Tax Results</a>
+                        <a href="{{ route('formC') }}">6. Annexes for the Income tax of Companies</a>
                     </div>
                 </div>
+
                 <div class="col-md-10">
                     <!-- Main content -->
                     <div class="container">
+                        @yield('anouncements')
                         @yield('FormD')
                         @yield('FormE')
                         @yield('FormC')
@@ -119,10 +127,8 @@
     </div>
 </div>
 
-
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.10.2/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
 
 @endsection

@@ -22,7 +22,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('warehouse_address')->nullable();
-            $table->decimal('area', 15, 2)->nullable();
+            $table->string('area')->nullable();
             $table->boolean('private_owned')->default(false);
             $table->boolean('musataha')->default(false);
             $table->boolean('rent')->default(false);

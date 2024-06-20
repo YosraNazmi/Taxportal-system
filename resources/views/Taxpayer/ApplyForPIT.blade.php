@@ -1,5 +1,4 @@
 @extends('Taxpayer.Layouts.layout')
-@section('ApplyPIT')
 <style>
     .custom-container {
         max-width: 960px; /* Customize this value as needed */
@@ -33,6 +32,8 @@
   }
 
 </style>
+@section('ApplyPIT')
+
 <div class="container">
     <br><br>
     <div class="progress px-1" style="height: 3px;">
@@ -857,7 +858,6 @@
 
 
 @endsection
-
 
 
 

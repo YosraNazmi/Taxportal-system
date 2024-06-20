@@ -19,7 +19,7 @@ class AppendixEightB extends Model
         'number_of_preferred_contribution',
         'book_value',
         'accounting_profit',
-        'total_2,'
+        'total_2',
     ];
 
     public function user()

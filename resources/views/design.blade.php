@@ -9,15 +9,9 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 <title>Taxpayer Account Registration</title>
-<style>
-     .container{
-        max-width: 900px;
-       
-    }
-</style>
 <body>
     <section id="register">
-        <div class="container login-secc">
+        <div class="container login-secc" style="max-width: 1000px">
             <h2 class="text-center">Create your Tax Portal Account</h2>
             <br>
             <div class="mt-5">
@@ -38,28 +32,100 @@
             <form action="{{ route('register.post') }}" method="POST">
                 @csrf <!-- CSRF protection -->
                 <div class="row">
-                    <div class="col">
+                    <legend>Personal Information Details</legend>
+                    <div class="col-md-6">
                         <!-- First Name Input -->
-                        <input type="text" class="form-control mb-3" placeholder="First name" name="firstname" value="{{ old('firstname') }}">
+                        <input type="text" class="form-control" placeholder="First name" name="firstname" value="{{ old('firstname') }}">
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col">
+                    <div class="col-md-6">
                         <!-- Last Name Input -->
-                        <input type="text" class="form-control mb-3" placeholder="Last name" name="lastname" value="{{ old('lastname') }}">
+                        <input type="text" class="form-control" placeholder="Last name" name="lastname" value="{{ old('lastname') }}">
                     </div>
+
                 </div>
+                <br>
                 <div class="row">
                     <div class="col">
                         <!-- UEN Name Input -->
-                        <input type="text" class="form-control mb-3" placeholder="UPN Number" name="UPN" value="{{ old('uen') }}">
+                        <input type="text" class="form-control" placeholder="UPN Number" name="UPN" value="{{ old('uen') }}">
+                    </div>
+                    <div class="col">
+                        <!-- Date of Birth Input -->
+                        <input type="date" placeholder="Date Of Birth" class="form-control" name="dob" value="{{ old('dob') }}">
                     </div>
                 </div>
-                <!-- Other fields omitted for brevity -->
+                <br>
                 <div class="row">
+                   
                     <div class="col">
+                        <!-- ID Type Select Dropdown -->
+                        <select class="form-control" name="select">
+                            <option value="passport" >Passport</option>
+                            <option value="nationalId" >National ID</option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <!-- ID Number Input -->
+                        <input type="text" class="form-control" placeholder="National ID No" name="idNo" value="{{ old('idNo') }}">
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <legend>Company Information</legend>              
+                    <div class="col-sm-4">
+                        <!-- Phone Number Input -->
+                        <input type="text" name="companyName" placeholder="Company Name" class="form-control">
+                    </div>
+                    <div class="col-sm-4">
                         <!-- Password Input -->
-                        <input type="password" name="password" placeholder="Password" class="form-control mb-3">
+                        <input type="text" name="uen" placeholder="UEN Number" class="form-control">
+                    </div>
+                    <div class="col">
+                        <!-- ID Type Select Dropdown -->
+                        <select class="form-control" name="category" aria-placeholder="Company Type">
+                            <option value="Bank" >Bank</option>
+                            <option value="Government" >Givernmanrt</option>
+                        </select>
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <legend>Address Details</legend>
+                    <div class="col">
+                        <!-- Address Line 1 Input -->
+                        <input type="text" name="addressLine1" placeholder="Address Line 1" class="form-control" value="{{ old('addressLine1') }}">
+                    </div>
+                    <div class="col">
+                        <!-- City Input -->
+                        <input type="text" name="city" placeholder="City" class="form-control" value="{{ old('city') }}">
+                    </div>
+                    <div class="col">
+                        <!-- Country Input -->
+                        <input type="text" name="country" placeholder="Country" class="form-control" value="{{ old('country') }}">
+                    </div>
+                    <div class="col">
+                        <!-- Postal Code Input -->
+                        <input type="text" name="postalCode" placeholder="Post Code" class="form-control" value="{{ old('postalCode') }}">
+                    </div>
+                </div>
+                <br>
+                <div class="row">
+                    <legend>Contact Information</legend>              
+                    <div class="col-sm-3">
+                        <!-- Phone Number Input -->
+                        <input type="text" name="ePhoneNbr" placeholder="Phone Number" class="form-control" value="{{ old('ePhoneNbr') }}">
+                    </div>
+                    <div class="col-sm-3">
+                        <!-- Email Input -->
+                        <input type="email" name="email" placeholder="Email" class="form-control" value="{{ old('eEmail') }}">
+                    </div>
+                    <div class="col-sm-3">
+                        <!-- BRS code Input -->
+                        <input type="text" name="code" placeholder="Code" class="form-control">
+                    </div>
+                    <div class="col-sm-3">
+                        <!-- Password Input -->
+                        <input type="password" name="password" placeholder="Password" class="form-control">
                     </div>
                 </div>
                 <br><br>

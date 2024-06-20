@@ -17,6 +17,7 @@ class AppendixFour extends Model
         'nationality',
         'legal_form',
         'ownership_ratio',
+        'ownershipRatio'
     ];
 
     public function user()

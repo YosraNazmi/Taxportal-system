@@ -38,15 +38,24 @@ use App\Models\FormB;
 use App\Models\FormD;
 use App\Models\FormE;
 use App\Models\IntangibleAsset;
+use App\Models\SubmittedAppendix;
 use App\Models\TangibleAsset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Session;
+use Symfony\Component\HttpFoundation\Session\Session as SessionSession;
 
 class AnnualTaxController extends Controller
 {
-    
+    public function viewAnnualTaxForm()
+    {
+        $userId = Auth::id();
+        // Fetch all submitted appendices by the user
+        $submittedAppendices = SubmittedAppendix::where('user_id', $userId)->pluck('appendix_four_id')->toArray();
+        return view('Taxpayer.Anouncements', compact('submittedAppendices'));
+    }
     public function formA()
     {
         $userId = Auth::id();
@@ -68,17 +77,8 @@ class AnnualTaxController extends Controller
     
             // Validate the incoming request data for both Form A and Form B
             $validatedData = $request->validate([
-                'uen' => 'required|string|max:255',
-                'financialYearFrom' => 'required|date',
-                'financialYearTo' => 'required|date',
-                'companyName' => 'required|string|max:255',
-                'address' => 'required|string|max:255',
-                'city' => 'required|string|max:255',
-                'country' => 'required|string|max:255',
-                'postalCode' => 'required|string|max:10',
-                'phone1' => 'required|string|max:20',
-                'phone2' => 'nullable|string|max:20',
-                'email' => 'required|email|max:255',
+                'financialYearFrom' => 'nullable|date',
+                'financialYearTo' => 'nullable|date',
                 'legalStructureChange' => 'required|string|in:yes,no',
                 'legalStructureChangeDate' => 'required_if:legalStructureChange,yes|date|nullable',
                 'newLegalStructure' => 'required_if:legalStructureChange,yes|string|max:255|nullable',
@@ -304,7 +304,11 @@ class AnnualTaxController extends Controller
 
         // Check if the view exists
         if (view()->exists($viewName)) {
-            return view($viewName);
+            // Check if form data exists for the current user
+            $formData = AppendixFour::where('user_id', auth()->user()->id)->first();
+
+            // Pass the form data to the view if it exists
+            return view($viewName, ['formData' => $formData]);
         }
 
         // Return a 404 response if the view does not exist
@@ -406,16 +410,26 @@ class AnnualTaxController extends Controller
 
     public function storeAppendixFour(Request $request) 
     {
+        // Get the authenticated user's ID
+        $userId = $request->user()->id;
+
+        // Check if the user already has an AppendixFour record
+        $existingAppendix = AppendixFour::where('user_id', $userId)->exists();
+
+        // If the user already has an AppendixFour record, return an error message
+        if ($existingAppendix) {
+            return redirect()->back()->with('error', 'You have already submitted Appendix Four.');
+        }
+
+        // Validate the request data
         $validatedData = $request->validate([
             'corporation.*' => 'nullable',
             'tax_number.*' => 'nullable',
             'nationality.*' => 'nullable',
             'legal_form.*' => 'nullable',
             'ownership_ratio.*' => 'nullable',
+            'ownershipRatio' =>'nullable'
         ]);
-
-        // Get the authenticated user's ID
-        $userId = $request->user()->id;
 
         // Retrieve the input arrays from the request
         $corporations = $validatedData['corporation'] ?? [];
@@ -423,7 +437,7 @@ class AnnualTaxController extends Controller
         $nationalities = $validatedData['nationality'] ?? [];
         $legal_forms = $validatedData['legal_form'] ?? [];
         $ownership_ratios = $validatedData['ownership_ratio'] ?? [];
-
+        $ownershipRatio = $validatedData['ownershipRatio'];
         // Iterate over the arrays and create AppendixFour records
         foreach ($corporations as $index => $corporation) {
             // Check if all fields in the row are empty
@@ -436,23 +450,40 @@ class AnnualTaxController extends Controller
             ];
 
             if (array_filter($fields)) {
-                AppendixFour::create([
+                $appendix = AppendixFour::create([
                     'user_id' => $userId,
                     'corporation' => $corporation ?? '',
                     'tax_number' => $tax_numbers[$index] ?? '',
                     'nationality' => $nationalities[$index] ?? '',
                     'legal_form' => $legal_forms[$index] ?? '',
                     'ownership_ratio' => $ownership_ratios[$index] ?? 0,
+                    'ownershipRatio' => $ownershipRatio,
+                ]);
+
+                // Save the submitted appendix information
+                SubmittedAppendix::create([
+                    'user_id' => $userId,
+                    'appendix_four_id' => $appendix->id,
                 ]);
             }
         }
 
         // Redirect back with a success message
-        return redirect()->back()->with('success', 'Data saved successfully');
+        return redirect()->route('appendix.show', ['number' => 5])->with('success', 'Appendix 4 submitted successfully. Proceed to Appendix 5.');
+
     }
 
     public function storeAppendixFive(Request $request)
     {
+        $userId = $request->user()->id;
+
+        // Check if the user already has an AppendixFour record
+        $existingAppendix = AppendixFive::where('user_id', $userId)->exists();
+
+        // If the user already has an AppendixFour record, return an error message
+        if ($existingAppendix) {
+            return redirect()->back()->with('error', 'You have already submitted Appendix Four.');
+        }
         $validatedData = $request->validate([
             'tax_number_merge.*' => 'nullable', 
             'previous_company.*' => 'nullable',
@@ -461,9 +492,6 @@ class AnnualTaxController extends Controller
             'start_date_liquidation.*' => 'nullable',
             'end_date_liquidation.*' => 'nullable',
         ]);
-    
-        // Get the authenticated user's ID
-        $userId = $request->user()->id;
     
         $tax_number_merge = $validatedData['tax_number_merge'] ?? [];
         $previous_company = $validatedData['previous_company'] ?? [];
@@ -496,7 +524,7 @@ class AnnualTaxController extends Controller
         }
     
         // Redirect back with a success message
-        return redirect()->back()->with('success', 'Data saved successfully');
+        return redirect()->route('appendix.show', ['number' => 6])->with('success', 'Appendix 5 submitted successfully. Proceed to Appendix 6.');
     }
 
     public function storeAppendixSix(Request $request) 
@@ -593,7 +621,7 @@ class AnnualTaxController extends Controller
         }
     
         // Redirect back with a success message
-        return redirect()->back()->with('success', 'Data saved successfully');
+        return redirect()->route('appendix.show', ['number' => 7])->with('success', 'Appendix 6 submitted successfully. Proceed to Appendix 7.');
     }
     
     public function storeAppendixSeven(Request $request)
@@ -681,111 +709,114 @@ class AnnualTaxController extends Controller
         // Save only the non-empty IntangibleAsset records
         $appendixSeven->intangibleAssets()->saveMany($intangibleAssetsData);
     
-        // Redirect back with a success message
-        return redirect()->back()->with('success', 'Data saved successfully');
+         // Redirect back with a success message
+         return redirect()->route('appendix.show', ['number' => 8])->with('success', 'Appendix 7 submitted successfully. Proceed to Appendix .');
     }
 
     public function storeAppendixEight(Request $request)
-    {
-        $request->validate([
-            'tax_number.1.*' => 'nullable|string',
-            'owned_company_name.1.*' => 'nullable|string',
-            'number_of_shares.1.*' => 'nullable|integer',
-            'ownership_percentage.1.*' => 'nullable|numeric',
-            'book_value.1.*' => 'nullable|numeric',
-            'accounting_profit.1.*' => 'nullable|numeric',
-            
-            'tax_number.2.*' => 'nullable|string',
-            'owned_company_name.2.*' => 'nullable|string',
-            'type_of_company.2.*' => 'nullable|string',
-            'number_of_shares.2.*' => 'nullable|integer',
-            'ownership_percentage.2.*' => 'nullable|numeric',
-            'number_of_preferred_contribution.2.*' => 'nullable|integer',
-            'book_value.2.*' => 'nullable|numeric',
-            'accounting_profit.2.*' => 'nullable|numeric',
-            
-    
-            'tax_number.3.*' => 'nullable|string',
-            'owned_company_name.3.*' => 'nullable|string',
-            'nationality.3.*' => 'nullable|string',
-            'company_type.3.*' => 'nullable|string',
-            'number_of_shares.3.*' => 'nullable|integer',
-            'ownership_percentage.3.*' => 'nullable|numeric',
-            'number_of_preferred_shared.3.*' => 'nullable|integer',
-            'book_value.3.*' => 'nullable|numeric',
-            'accounting_profit.3.*' => 'nullable|numeric',
-            
-            'total_1' => 'nullable|numeric',
-            'total_2' => 'nullable|numeric',
-            'total_3' => 'nullable|numeric',
-        ]);
-    
-        $userId = Auth::id();
-        $total_1 = $request->input('total_1');
-        $total_2 = $request->input('total_2');
-        $total_3 = $request->input('total_3');
-    
-        // Store data in appendix_eight table
-        if (isset($request->tax_number['1'])) {
-            foreach ($request->tax_number['1'] as $key => $value) {
-                if (!empty($value) || !empty($request->owned_company_name['1'][$key]) || !empty($request->number_of_shares['1'][$key]) || !empty($request->ownership_percentage['1'][$key]) || !empty($request->book_value['1'][$key]) || !empty($request->accounting_profit['1'][$key])) {
-                    AppendixEight::create([
-                        'user_id' => $userId,
-                        'total_1' => $total_1,
-                        'tax_number' => $value,
-                        'owned_company_name' => $request->owned_company_name['1'][$key],
-                        'number_of_shares' => $request->number_of_shares['1'][$key] ?? 0,
-                        'ownership_percentage' => $request->ownership_percentage['1'][$key] ?? 0.0,
-                        'book_value' => $request->book_value['1'][$key] ?? 0.0,
-                        'accounting_profit' => $request->accounting_profit['1'][$key] ?? 0.0,
-                    ]);
-                }
+{
+    $request->validate([
+        'tax_number.1.*' => 'nullable|string',
+        'owned_company_name.1.*' => 'nullable|string',
+        'number_of_shares.1.*' => 'nullable|integer',
+        'ownership_percentage.1.*' => 'nullable|numeric',
+        'book_value.1.*' => 'nullable|numeric',
+        'accounting_profit.1.*' => 'nullable|numeric',
+        
+        'tax_number.2.*' => 'nullable|string',
+        'owned_company_name.2.*' => 'nullable|string',
+        'type_of_company.2.*' => 'nullable|string',
+        'number_of_shares.2.*' => 'nullable|integer',
+        'ownership_percentage.2.*' => 'nullable|numeric',
+        'number_of_preferred_contribution.2.*' => 'nullable|integer',
+        'book_value.2.*' => 'nullable|numeric',
+        'accounting_profit.2.*' => 'nullable|numeric',
+        
+        'tax_number.3.*' => 'nullable|string',
+        'owned_company_name.3.*' => 'nullable|string',
+        'nationality.3.*' => 'nullable|string',
+        'company_type.3.*' => 'nullable|string',
+        'number_of_shares.3.*' => 'nullable|integer',
+        'ownership_percentage.3.*' => 'nullable|numeric',
+        'number_of_preferred_shared.3.*' => 'nullable|integer',
+        'book_value.3.*' => 'nullable|numeric',
+        'accounting_profit.3.*' => 'nullable|numeric',
+        
+        'total_1' => 'nullable|numeric',
+        'total_2' => 'nullable|numeric',
+        'total_3' => 'nullable|numeric',
+    ]);
+
+    $userId = Auth::id();
+    $total_1 = $request->input('total_1');
+    $total_2 = $request->input('total_2');
+    $total_3 = $request->input('total_3');
+
+    // Log totals for debugging
+    Log::info("Total 1: $total_1, Total 2: $total_2, Total 3: $total_3");
+
+    // Store data in appendix_eight table
+    if (isset($request->tax_number['1'])) {
+        foreach ($request->tax_number['1'] as $key => $value) {
+            if (!empty($value) || !empty($request->owned_company_name['1'][$key]) || !empty($request->number_of_shares['1'][$key]) || !empty($request->ownership_percentage['1'][$key]) || !empty($request->book_value['1'][$key]) || !empty($request->accounting_profit['1'][$key])) {
+                AppendixEight::create([
+                    'user_id' => $userId,
+                    'total_1' => $total_1,
+                    'tax_number' => $value,
+                    'owned_company_name' => $request->owned_company_name['1'][$key],
+                    'number_of_shares' => $request->number_of_shares['1'][$key] ?? 0,
+                    'ownership_percentage' => $request->ownership_percentage['1'][$key] ?? 0.0,
+                    'book_value' => $request->book_value['1'][$key] ?? 0.0,
+                    'accounting_profit' => $request->accounting_profit['1'][$key] ?? 0.0,
+                ]);
             }
         }
-    
-        // Store data in appendix_eight_b table
-        if (isset($request->tax_number['2'])) {
-            foreach ($request->tax_number['2'] as $key => $value) {
-                if (!empty($value) || !empty($request->owned_company_name['2'][$key]) || !empty($request->type_of_company['2'][$key]) || !empty($request->number_of_shares['2'][$key]) || !empty($request->ownership_percentage['2'][$key]) || !empty($request->number_of_preferred_contribution['2'][$key]) || !empty($request->book_value['2'][$key]) || !empty($request->accounting_profit['2'][$key])) {
-                    AppendixEightB::create([
-                        'user_id' => $userId,
-                        'tax_number' => $value,
-                        'total_2' => $total_2,
-                        'owned_company_name' => $request->owned_company_name['2'][$key],
-                        'type_of_company' => $request->type_of_company['2'][$key],
-                        'number_of_shares' => $request->number_of_shares['2'][$key] ?? 0,
-                        'ownership_percentage' => $request->ownership_percentage['2'][$key] ?? 0.0,
-                        'number_of_preferred_contribution' => $request->number_of_preferred_contribution['2'][$key] ?? 0,
-                        'book_value' => $request->book_value['2'][$key] ?? 0.0,
-                        'accounting_profit' => $request->accounting_profit['2'][$key] ?? 0.0,
-                    ]);
-                }
-            }
-        }
-    
-        // Store data in appendix_eight_c table
-        if (isset($request->tax_number['3'])) {
-            foreach ($request->tax_number['3'] as $key => $value) {
-                if (!empty($value) || !empty($request->owned_company_name['3'][$key]) || !empty($request->nationality['3'][$key]) || !empty($request->company_type['3'][$key]) || !empty($request->number_of_shares['3'][$key]) || !empty($request->ownership_percentage['3'][$key]) || !empty($request->number_of_preferred_shared['3'][$key]) || !empty($request->book_value['3'][$key]) || !empty($request->accounting_profit['3'][$key])) {
-                    AppendixEightC::create([
-                        'user_id' => $userId,
-                        'total_3' => $total_3,
-                        'tax_number' => $value,
-                        'owned_company_name' => $request->owned_company_name['3'][$key],
-                        'nationality' => $request->nationality['3'][$key],
-                        'company_type' => $request->company_type['3'][$key],
-                        'number_of_shares' => $request->number_of_shares['3'][$key] ?? 0,
-                        'ownership_percentage' => $request->ownership_percentage['3'][$key] ?? 0.0,
-                        'number_of_preferred_shared' => $request->number_of_preferred_shared['3'][$key] ?? 0,
-                        'book_value' => $request->book_value['3'][$key] ?? 0.0,
-                        'accounting_profit' => $request->accounting_profit['3'][$key] ?? 0.0,
-                    ]);
-                }
-            }
-        }
-    
-        return redirect()->back()->with('success', 'Data saved successfully.');
     }
+
+    // Store data in appendix_eight_b table
+    if (isset($request->tax_number['2'])) {
+        foreach ($request->tax_number['2'] as $key => $value) {
+            if (!empty($value) || !empty($request->owned_company_name['2'][$key]) || !empty($request->type_of_company['2'][$key]) || !empty($request->number_of_shares['2'][$key]) || !empty($request->ownership_percentage['2'][$key]) || !empty($request->number_of_preferred_contribution['2'][$key]) || !empty($request->book_value['2'][$key]) || !empty($request->accounting_profit['2'][$key])) {
+                AppendixEightB::create([
+                    'user_id' => $userId,
+                    'tax_number' => $value,
+                    'total_2' => $total_2,
+                    'owned_company_name' => $request->owned_company_name['2'][$key],
+                    'type_of_company' => $request->type_of_company['2'][$key],
+                    'number_of_shares' => $request->number_of_shares['2'][$key] ?? 0,
+                    'ownership_percentage' => $request->ownership_percentage['2'][$key] ?? 0.0,
+                    'number_of_preferred_contribution' => $request->number_of_preferred_contribution['2'][$key] ?? 0,
+                    'book_value' => $request->book_value['2'][$key] ?? 0.0,
+                    'accounting_profit' => $request->accounting_profit['2'][$key] ?? 0.0,
+                ]);
+            }
+        }
+    }
+
+    // Store data in appendix_eight_c table
+    if (isset($request->tax_number['3'])) {
+        foreach ($request->tax_number['3'] as $key => $value) {
+            if (!empty($value) || !empty($request->owned_company_name['3'][$key]) || !empty($request->nationality['3'][$key]) || !empty($request->company_type['3'][$key]) || !empty($request->number_of_shares['3'][$key]) || !empty($request->ownership_percentage['3'][$key]) || !empty($request->number_of_preferred_shared['3'][$key]) || !empty($request->book_value['3'][$key]) || !empty($request->accounting_profit['3'][$key])) {
+                AppendixEightC::create([
+                    'user_id' => $userId,
+                    'total_3' => $total_3,
+                    'tax_number' => $value,
+                    'owned_company_name' => $request->owned_company_name['3'][$key],
+                    'nationality' => $request->nationality['3'][$key],
+                    'company_type' => $request->company_type['3'][$key],
+                    'number_of_shares' => $request->number_of_shares['3'][$key] ?? 0,
+                    'ownership_percentage' => $request->ownership_percentage['3'][$key] ?? 0.0,
+                    'number_of_preferred_shared' => $request->number_of_preferred_shared['3'][$key] ?? 0,
+                    'book_value' => $request->book_value['3'][$key] ?? 0.0,
+                    'accounting_profit' => $request->accounting_profit['3'][$key] ?? 0.0,
+                ]);
+            }
+        }
+    }
+
+   // Redirect back with a success message
+   return redirect()->route('appendix.show', ['number' => 9])->with('success', 'Appendix 8 submitted successfully. Proceed to Appendix 9.');
+}
 
     // Helper function to calculate total
     private function calculateTotal($values)
@@ -854,8 +885,8 @@ class AnnualTaxController extends Controller
             }
         }
 
-        // Redirect back with a success message
-        return back()->with('success', 'Data saved successfully.');
+         // Redirect back with a success message
+         return redirect()->route('appendix.show', ['number' => 10])->with('success', 'Appendix 9 submitted successfully. Proceed to Appendix 10.');
     }
     
     public function storeAppendixTen(Request $request)
@@ -896,7 +927,8 @@ class AnnualTaxController extends Controller
             AppendixTen::insert($appendixTenData);
         }
 
-        return redirect()->back()->with('success', 'Data saved successfully.');
+        // Redirect back with a success message
+        return redirect()->route('appendix.show', ['number' => 11])->with('success', 'Appendix 10 submitted successfully. Proceed to Appendix 11.');
     }
 
     public function storeAppendixEleven(Request $request)
@@ -945,7 +977,8 @@ class AnnualTaxController extends Controller
             AppendixEleven::insert($data);
         }
 
-        return redirect()->back()->with('success', 'Operations saved successfully.');
+         // Redirect back with a success message
+         return redirect()->route('appendix.show', ['number' => 12])->with('success', 'Appendix 11 submitted successfully. Proceed to Appendix 12.');
     }
     public function storeAppendixTwelve(Request $request)
     {
@@ -999,7 +1032,8 @@ class AnnualTaxController extends Controller
             AppendixTwelve::insert($data);
         }
 
-        return redirect()->back()->with('success', 'Operations saved successfully.');
+         // Redirect back with a success message
+         return redirect()->route('appendix.show', ['number' => 13])->with('success', 'Appendix 12 submitted successfully. Proceed to Appendix 13.');
     }
 
     public function storeAppendixThirteen(Request $request)
@@ -1045,7 +1079,8 @@ class AnnualTaxController extends Controller
             AppendixThirteen::insert($data);
         }
 
-        return redirect()->back()->with('success', 'Operations saved successfully.');
+        // Redirect back with a success message
+        return redirect()->route('appendix.show', ['number' => 14])->with('success', 'Appendix 13 submitted successfully. Proceed to Appendix 14.');
     }
 
     public function storeAppendixFourteen(Request $request)
@@ -1089,7 +1124,8 @@ class AnnualTaxController extends Controller
             }
         }
     
-        return redirect()->back()->with('success', 'Data saved successfully.');
+        // Redirect back with a success message
+        return redirect()->route('appendix.show', ['number' => 15])->with('success', 'Appendix 14 submitted successfully. Proceed to Appendix 15.');
     }
     
     public function storeAppendixFifteen(Request $request) 
@@ -1146,7 +1182,8 @@ class AnnualTaxController extends Controller
         if (!empty($data)) {
             AppendixFifteen::insert($data);
         }
-        return redirect()->back()->with('success', 'Data saved successfully.');
+        // Redirect back with a success message
+        return redirect()->route('appendix.show', ['number' => 16])->with('success', 'Appendix 15 submitted successfully. Proceed to Appendix 16.');
     }
 
     public function storeAppendixSixteen(Request $request) 
@@ -1187,7 +1224,8 @@ class AnnualTaxController extends Controller
         if (!empty($data)) {
             AppendixSixteen::insert($data);
         }
-        return redirect()->back()->with('success', 'Data saved successfully.');
+        // Redirect back with a success message
+        return redirect()->route('appendix.show', ['number' => 17])->with('success', 'Appendix 16 submitted successfully. Proceed to Appendix 17.');
     }
     
     public function storeAppendixSeventeen(Request $request) 
@@ -1213,7 +1251,8 @@ class AnnualTaxController extends Controller
             }
         }
     
-        return redirect()->back()->with('success', 'Data saved successfully.');
+        // Redirect back with a success message
+        return redirect()->route('appendix.show', ['number' => 18])->with('success', 'Appendix 17 submitted successfully. Proceed to Appendix 18.');
     }
 
     public function storeAppendixEighteen(Request $request)
@@ -1259,7 +1298,8 @@ class AnnualTaxController extends Controller
         if (!empty($data)) {
             AppendixEighteen::insert($data);
         }
-        return redirect()->back()->with('success', 'Data saved successfully.');
+         // Redirect back with a success message
+         return redirect()->route('appendix.show', ['number' => 19])->with('success', 'Appendix 18 submitted successfully. Proceed to Appendix 19.');
     }
     
     public function storeAppendixNineteen(Request $request)
@@ -1312,7 +1352,8 @@ class AnnualTaxController extends Controller
             AppendixNineteen::insert($data);
         }
     
-        return redirect()->back()->with('success', 'Data saved successfully.');
+        // Redirect back with a success message
+        return redirect()->route('appendix.show', ['number' => 20])->with('success', 'Appendix 19 submitted successfully. Proceed to Appendix 20.');
     }
     
 
@@ -1401,16 +1442,17 @@ class AnnualTaxController extends Controller
             AppendixTwentyB::insert($value);
         }
     
-        return redirect()->back()->with('success', 'Data saved successfully.');
+        // Redirect back with a success message
+        return redirect()->route('appendix.show', ['number' => 21])->with('success', 'Appendix 20 submitted successfully. Proceed to Appendix 21.');
     }
-    
+
     public function storeAppendixTwentyOne(Request $request)
     {
         $validatedData = $request->validate([
             'tax_number.*' => 'nullable|string|max:15',
             'name_of_insurance_company.*' => 'nullable|string',
-            'local_insurance.*' => 'nullable|in:yes,no',
-            'external_insurance.*' => 'nullable|in:yes,no',
+            'local_insurance.*' => 'nullable|boolean',
+            'external_insurance.*' => 'nullable|boolean',
             'insurance_current_period.*' => 'nullable|numeric',
             'allowed_insurance_premiums.*' => 'nullable|numeric',
             'difference_allowed.*' => 'nullable|numeric',
@@ -1422,6 +1464,9 @@ class AnnualTaxController extends Controller
         $data = [];
 
         foreach ($validatedData['tax_number'] as $index => $taxNumber) {
+            // Check if any field except tax_number is filled
+            $hasFilledField = false;
+
             $nameOfInsuranceCompany = $validatedData['name_of_insurance_company'][$index] ?? null;
             $localInsurance = $validatedData['local_insurance'][$index] ?? null;
             $externalInsurance = $validatedData['external_insurance'][$index] ?? null;
@@ -1429,18 +1474,23 @@ class AnnualTaxController extends Controller
             $allowedInsurancePremiums = $validatedData['allowed_insurance_premiums'][$index] ?? null;
             $differenceAllowed = $validatedData['difference_allowed'][$index] ?? null;
 
-            if (
-                is_null($taxNumber) &&
-                is_null($nameOfInsuranceCompany) &&
-                is_null($localInsurance) &&
-                is_null($externalInsurance) &&
-                is_null($insuranceCurrentPeriod) &&
-                is_null($allowedInsurancePremiums) &&
-                is_null($differenceAllowed)
+            // Check if any of the fields (except tax_number) are filled
+            if (!is_null($nameOfInsuranceCompany) ||
+                !is_null($localInsurance) ||
+                !is_null($externalInsurance) ||
+                !is_null($insuranceCurrentPeriod) ||
+                !is_null($allowedInsurancePremiums) ||
+                !is_null($differenceAllowed)
             ) {
+                $hasFilledField = true;
+            }
+
+            // If no filled fields other than tax_number, skip this row
+            if (!$hasFilledField) {
                 continue;
             }
 
+            // Add data to $data array for insertion
             $data[] = [
                 'user_id' => $userId,
                 'tax_number' => $taxNumber,
@@ -1460,7 +1510,8 @@ class AnnualTaxController extends Controller
             AppendixTwentyOne::insert($data);
         }
 
-        return redirect()->back()->with('success', 'Data saved successfully.');
+        // Redirect back with a success message
+        return redirect()->route('appendix.show', ['number' => 22])->with('success', 'Appendix 21 submitted successfully. Proceed to Appendix 22.');
     }
 
     public function storeAppendixTwentyTwo(Request $request)
@@ -1509,7 +1560,8 @@ class AnnualTaxController extends Controller
             AppendixTwentyTwo::insert($data);
         }
 
-        return redirect()->back()->with('success', 'Data saved successfully.');
+         // Redirect back with a success message
+         return redirect()->route('appendix.show', ['number' => 23])->with('success', 'Appendix 22 submitted successfully. Proceed to Appendix 23.');
     }
     public function storeAppendixTwentyThree(Request $request)
     {
@@ -1558,7 +1610,8 @@ class AnnualTaxController extends Controller
             AppendixTwentyThree::insert($data);
         }
     
-        return redirect()->back()->with('success', 'Data saved successfully.');
+        // Redirect back with a success message
+        return redirect()->route('appendix.show', ['number' => 24])->with('success', 'Appendix 23 submitted successfully. Proceed to Appendix 24.');
     }
     
     public function storeAppendixTwentyFour(Request $request)
@@ -1608,7 +1661,8 @@ class AnnualTaxController extends Controller
             AppendixTwentyFour::insert($data);
         }
     
-        return redirect()->back()->with('success', 'Data saved successfully.');
+        // Redirect back with a success message
+        return redirect()->route('appendix.show', ['number' => 25])->with('success', 'Appendix 24 submitted successfully. Proceed to Appendix 25.');
     }
     public function storeAppendixTwentyFive(Request $request)
     {
@@ -1651,7 +1705,8 @@ class AnnualTaxController extends Controller
             AppendixTwentyFive::insert($data);
         }
     
-        return redirect()->back()->with('success', 'Data saved successfully.');
+         // Redirect back with a success message
+         return redirect()->route('appendix.show', ['number' => 26])->with('success', 'Appendix 25 submitted successfully. Proceed to Appendix 26.');
     }
     
     public function storeAppendixTwentySix(Request $request)
@@ -1706,7 +1761,8 @@ class AnnualTaxController extends Controller
             AppendixTwentySix::insert($data);
         }
 
-        return redirect()->back()->with('success', 'Data saved successfully.');
+        // Redirect back with a success message
+        return redirect()->route('appendix.show', ['number' => 27])->with('success', 'Appendix 25 submitted successfully. Proceed to Appendix 27.');
     }
 
     public function storeAppendixTwentySeven(Request $request)

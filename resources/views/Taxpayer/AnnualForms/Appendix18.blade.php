@@ -1,75 +1,141 @@
 @extends('Taxpayer.AnnualTaxForm')
 
 @section('AppendixEighteen')
+@php
+    // Check if form data exists
+    $formData = \App\Models\AppendixEighteen::where('user_id', auth()->id())->get();
+@endphp
 <div class="custom-container mt-5">
     <br>
     <h5 class="custom-header">Appendix #18  Statement of Secondary Contractors</h5>
+    @if ($formData->isNotEmpty())
     <div class="table-container mt-4">
-    <form action="{{route('AppendixEighteen.store')}}" method="POST">
-        @csrf
-        @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul>
-                @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-        @endif
-        @if (session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
-        @endif
-        <table class="table table-bordered custom-table form-table " id="operations-table">
-            <thead >
-                <tr>
-                    <th>Code</th>
-                    <th>Name of Secondary Contractor</th>
-                    <th>Tax Number</th>
-                    <th>Nationality</th>
-                    <th>Total Contract Value</th>
-                    <th>Amount Paid for the Current Year</th>
-                </tr>
-            </thead>
-            <tbody id="table-body" style="background-color:#f1f1f1">
-                <tr >
-                    <td>100</td>        
-                    <td><input type="text" name="name_secondry_contract[]" class="form-control" oninput="checkInputs()"></td>
-                    <td><input type="text" name="tax_number[]" class="form-control" oninput="checkInputs()"></td>
-                    <td><input type="text" name="nationality[]" class="form-control" oninput="checkInputs()"></td>
-                    <td><input type="text" name="contract_value[]" class="form-control" oninput="checkInputs()"></td>
-                    <td><input type="text" name="amount_paid[]" class="form-control" oninput="checkInputs()"></td>
-                </tr>
-                <tr>
-                    <td>120</td>
-                    <td><input type="text" name="name_secondry_contract[]" class="form-control" oninput="checkInputs()"></td>
-                    <td><input type="text" name="tax_number[]" class="form-control" oninput="checkInputs()"></td>
-                    <td><input type="text" name="nationality[]" class="form-control" oninput="checkInputs()"></td>
-                    <td><input type="text" name="contract_value[]" class="form-control" oninput="checkInputs()"></td>
-                    <td><input type="text" name="amount_paid[]" class="form-control" oninput="checkInputs()"></td>
-                </tr>
-                <tr>
-                    <td>130</td>
-                    <td><input type="text" name="name_secondry_contract[]" class="form-control" oninput="checkInputs()"></td>
-                    <td><input type="text" name="tax_number[]" class="form-control" oninput="checkInputs()"></td>
-                    <td><input type="text" name="nationality[]" class="form-control" oninput="checkInputs()"></td>
-                    <td><input type="text" name="contract_value[]" class="form-control" oninput="checkInputs()"></td>
-                    <td><input type="text" name="amount_paid[]" class="form-control" oninput="checkInputs()"></td>
-                </tr>
-                <tr class="footer-row">
-                    <td>200</td>
-                    <td colspan="3">Total</td>
-                    <td><input type="text" id="total_1" name="total_1" class="form-control" readonly></td>
-                    <td><input type="text" id="total_2" name="total_2" class="form-control" readonly></td>
-                </tr>
-            </tbody>
-        </table>
+        <form action="{{route('updateAppendixEighteen')}}" method="POST">
+            @csrf
+            @method('PUT')
+            @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
+            @if (session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+            @endif
+            <table class="table table-bordered custom-table form-table " id="operations-table">
+                <thead >
+                    <tr>
+                        <th>Code</th>
+                        <th>Name of Secondary Contractor</th>
+                        <th>Tax Number</th>
+                        <th>Nationality</th>
+                        <th>Total Contract Value</th>
+                        <th>Amount Paid for the Current Year</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body" style="background-color:#f1f1f1">
+                    @foreach ($formData as $index => $data)
+                    <tr >
+                        <td>100</td>        
+                        <td><input type="text" name="name_secondry_contract[]" class="form-control" oninput="checkInputs()" value="{{ $data->name_secondry_contract }}"></td>
+                        <td><input type="text" name="tax_number[]" class="form-control" oninput="checkInputs()" value="{{ $data->tax_number }}"></td>
+                        <td><input type="text" name="nationality[]" class="form-control" oninput="checkInputs()" value="{{ $data->nationality }}"></td>
+                        <td><input type="text" name="contract_value[]" class="form-control" oninput="checkInputs()" value="{{ $data->contract_value }}"></td>
+                        <td><input type="text" name="amount_paid[]" class="form-control" oninput="checkInputs()" value="{{ $data->amount_paid }}"></td>
+                    </tr>
+                    @endforeach
+                    <tr class="footer-row">
+                        <td>200</td>
+                        <td colspan="3">Total</td>
+                        <td><input type="text" id="total_1" name="total_1" class="form-control" value="{{ $formData->sum('total_1') ?? '' }}" readonly></td>
+                        <td><input type="text" id="total_2" name="total_2" class="form-control" value="{{ $formData->sum('total_2') ?? '' }}" readonly></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button type="submit" class="btn btn-primary">Update</button>
+            <button type="button" class="btn btn-info" id="prevButton">
+                <a href="{{ route('appendix.show', ['number' => 17]) }}">Previous</a>
+            </button>
+            <button type="button" class="btn btn-info" id="prevButton">
+                <a href="{{ route('appendix.show', ['number' => 19]) }}">Next</a>
+            </button>
+        </form>
+    </div>
+    @else
+    <div class="table-container mt-4">
+        <form action="{{route('AppendixEighteen.store')}}" method="POST">
+            @csrf
+            @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
+            @if (session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+            @endif
+            <table class="table table-bordered custom-table form-table " id="operations-table">
+                <thead >
+                    <tr>
+                        <th>Code</th>
+                        <th>Name of Secondary Contractor</th>
+                        <th>Tax Number</th>
+                        <th>Nationality</th>
+                        <th>Total Contract Value</th>
+                        <th>Amount Paid for the Current Year</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body" style="background-color:#f1f1f1">
+                    <tr >
+                        <td>100</td>        
+                        <td><input type="text" name="name_secondry_contract[]" class="form-control" oninput="checkInputs()"></td>
+                        <td><input type="text" name="tax_number[]" class="form-control" oninput="checkInputs()"></td>
+                        <td><input type="text" name="nationality[]" class="form-control" oninput="checkInputs()"></td>
+                        <td><input type="text" name="contract_value[]" class="form-control" oninput="checkInputs()"></td>
+                        <td><input type="text" name="amount_paid[]" class="form-control" oninput="checkInputs()"></td>
+                    </tr>
+                    <tr>
+                        <td>120</td>
+                        <td><input type="text" name="name_secondry_contract[]" class="form-control" oninput="checkInputs()"></td>
+                        <td><input type="text" name="tax_number[]" class="form-control" oninput="checkInputs()"></td>
+                        <td><input type="text" name="nationality[]" class="form-control" oninput="checkInputs()"></td>
+                        <td><input type="text" name="contract_value[]" class="form-control" oninput="checkInputs()"></td>
+                        <td><input type="text" name="amount_paid[]" class="form-control" oninput="checkInputs()"></td>
+                    </tr>
+                    <tr>
+                        <td>130</td>
+                        <td><input type="text" name="name_secondry_contract[]" class="form-control" oninput="checkInputs()"></td>
+                        <td><input type="text" name="tax_number[]" class="form-control" oninput="checkInputs()"></td>
+                        <td><input type="text" name="nationality[]" class="form-control" oninput="checkInputs()"></td>
+                        <td><input type="text" name="contract_value[]" class="form-control" oninput="checkInputs()"></td>
+                        <td><input type="text" name="amount_paid[]" class="form-control" oninput="checkInputs()"></td>
+                    </tr>
+                    <tr class="footer-row">
+                        <td>200</td>
+                        <td colspan="3">Total</td>
+                        <td><input type="text" id="total_1" name="total_1" class="form-control" readonly></td>
+                        <td><input type="text" id="total_2" name="total_2" class="form-control" readonly></td>
+                    </tr>
+                </tbody>
+            </table>
 
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
-   
-</div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="button" class="btn btn-info" id="prevButton">
+                <a href="{{ route('appendix.show', ['number' => 17]) }}">Previous</a>
+            </button>
+        </form>
+    </div>
+    @endif
 <br>
 </div>
 

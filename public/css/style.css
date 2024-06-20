@@ -13,10 +13,8 @@
 
 body {
     background: #f8f9fc;
-    font-size: 15px;
+    font-size: 14px;
     color: var(--text-color);
-    text-transform: capitalize;
-    font-size: var(--bs-body-font-size);
 }
 
   a,
@@ -28,7 +26,7 @@ body {
   }
   
   a {
-    color: #1c3f55;
+    color: #1c3f55 !important;
   }
   
   a:hover {
@@ -45,6 +43,8 @@ body {
     font-family: "Raleway", sans-serif;
   }
 
+
+ 
   /*--------------------------------------------------------------
   # Header
   --------------------------------------------------------------*/
@@ -88,113 +88,67 @@ body {
   /**
   * Desktop Navigation 
   */
- 
+  .navbar {
+    display: flex;
+    align-items: center;
+  }
   
-  .navbar ul {
+  .nav-item {
+    list-style: none;
     margin: 0;
     padding: 0;
     display: flex;
-    list-style: none;
-    align-items: center;
   }
   
-  .navbar li {
-    position: relative;
+  .nav-links li {
+    margin: 0 15px;
   }
   
-  .navbar a,
-  .navbar a:focus {
-    display: flex;
-    align-items: center;
-    padding: 10px 0 10px 30px;
-    font-size: 15px;
-    color: #222222;
-    white-space: nowrap;
-    transition: 0.3s;
+  .nav-item li a {
+    text-decoration: none;
+    color: #222;
+    transition: color 0.3s ease;
   }
   
-  .navbar a i,
-  .navbar a:focus i {
-    line-height: 0;
-    margin-left: 5px;
-  }
-  
-  .navbar a:hover,
-  .navbar .active,
-  .navbar .active:focus,
-  .navbar li:hover>a {
+  .nav-item li a:hover {
     color: #a1cce2;
   }
   
-  /**
-  * Mobile Navigation 
-  */
   .mobile-nav-toggle {
-    color: #222222;
-    font-size: 28px;
-    cursor: pointer;
     display: none;
-    line-height: 0;
-    transition: 0.5s;
+    cursor: pointer;
+    font-size: 24px;
   }
   
-  .mobile-nav-toggle.bi-x {
-    color: #fff;
+  /* Media Query for Mobile */
+@media (max-width: 991px) {
+  .navbar {
+    flex-direction: row;
+    align-items: flex-start;
   }
-  
-  @media (max-width: 991px) {
-    .mobile-nav-toggle {
-      display: block;
-    }
-  
-    .navbar ul {
-      display: none;
-    }
+
+  .nav-links {
+    display: none;
   }
-  
-  .navbar-mobile {
-    position: fixed;
-    overflow: hidden;
-    top: 0;
-    right: 0;
-    left: 0;
-    bottom: 0;
-    background: rgba(9, 9, 9, 0.9);
-    transition: 0.3s;
-    z-index: 999;
-  }
-  
-  .navbar-mobile .mobile-nav-toggle {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-  }
-  
-  .navbar-mobile ul {
+
+  .mobile-nav-toggle {
     display: block;
-    position: absolute;
-    top: 55px;
-    right: 15px;
-    bottom: 15px;
-    left: 15px;
-    padding: 10px 0;
-    background-color: #fff;
-    overflow-y: auto;
-    transition: 0.3s;
   }
-  
-  .navbar-mobile a,
-  .navbar-mobile a:focus {
-    padding: 10px 20px;
-    font-size: 15px;
-    color: #222222;
+
+  /* Active State for Navbar */
+  .navbar.active {
+    background-color: #f8f9fa; /* Change background color */
+    border-bottom: 1px solid #ccc; /* Add border */
+    padding: 10px 0; /* Add padding */
   }
-  
-  .navbar-mobile a:hover,
-  .navbar-mobile .active,
-  .navbar-mobile li:hover>a {
-    color: #0e2735;
+
+  .navbar.active .nav-links {
+    display: flex;
+    flex-direction: column;
+    width: 100%; /* Expand width to full */
+    text-align: center; /* Center align links */
   }
+}
   
   /*--------------------------------------------------------------
   # Hero section
@@ -396,6 +350,11 @@ body {
     position: relative;
   }
 
+  @media (max-width: 767px) {
+    .row>*{
+      margin-bottom: 10px;
+    }
+  }
   /*--------------------------------------------------------------
   # login
   --------------------------------------------------------------*/
@@ -407,6 +366,7 @@ body {
     padding-top: 1%;
     padding-bottom: 2%;
 }
+
 /*--------------------------------------------------------------
   # Login
   --------------------------------------------------------------*/
@@ -625,6 +585,31 @@ input {
   .bg3 {
     background-color: #ea4335;
   }
+
+  /* Add Mobile Styles Here */
+@media (max-width: 767px) {
+  .left-content {
+      display: none;
+  }
+
+  .login-sec {
+      padding: 10% 20px;
+  }
+
+  .login-sec h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
+  }
+
+  .form-group {
+      margin-bottom: 15px;
+  }
+
+  .btn {
+      font-size: 16px;
+  }
+}
+
   
   /*--------------------------------------------------------------
   # sidebar

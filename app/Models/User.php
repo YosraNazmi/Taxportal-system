@@ -127,6 +127,9 @@ class User extends Authenticatable
         return $this->hasOne(AppendixNineB::class);
     }
 
-
+    public function submittedAppendices()
+    {
+        return $this->hasMany(SubmittedAppendix::class);
+    }
 
 }

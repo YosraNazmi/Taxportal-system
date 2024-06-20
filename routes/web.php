@@ -8,6 +8,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RepresnetativeController;
 use App\Http\Controllers\TaxpayerController;
 use App\Http\Controllers\TaxpayerFormController;
+use App\Http\Controllers\ViewAnnualFormTaxController;
 use App\Models\Form;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
@@ -16,7 +17,7 @@ use SebastianBergmann\CodeCoverage\Report\Xml\Report;
 // Welcome route
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('welcome');
 
 Route::get('/design', function () {
     return view('design');
@@ -41,6 +42,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/taxpayer/general',[TaxpayerFormController::class, 'GeneralTax'])->name('GeneralTax');
     Route::post('/taxpayer/NewForm', [TaxpayerFormController::class, 'NewFormPost'])->name('NewForm.Post');
     Route::get('/taxpayer/applyPIT', [TaxpayerFormController::class, 'applyPIT'])->name('applyPIT');
+    Route::post('/autosave', [TaxpayerFormController::class, 'autosave'])->name('form.autosave');
     Route::get('/taxpayer/payment/{reference}', [TaxpayerFormController::class, 'payment'])->name('payment');
     Route::get('/taxpayer/ViewForms',  [TaxpayerFormController::class, 'showData'])->name('ViewForms');
     Route::get('/taxpayer/filter-forms', [TaxpayerFormController::class, 'showData'])->name('filterForms');
@@ -50,9 +52,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/taxpayer/payments/{id}', [PaymentController::class, 'showPayment'])->name('paymentshow');
     Route::get('/download-pdf/{formId}', [TaxpayerFormController::class, 'downloadPDF'])->name('download.pdf');
     Route::get('/export-tax-form', [TaxpayerFormController::class, 'exportToExcel'])->name('exportToExcel');
-    Route::post('/form/autosave', [TaxpayerFormController::class, 'autoSave'])->name('NewForm.AutoSave');
+  //  Route::post('/form/autosave', [TaxpayerFormController::class, 'autoSave'])->name('NewForm.AutoSave');
     Route::post('/check-quarter-availability', [TaxpayerFormController::class, 'checkQuarterAvailability'])->name('checkQuarterAvailability');
-    Route::post('/form/autosave', [TaxpayerFormController::class, 'autoSave'])->name('form.autosave');
+  //  Route::post('/form/autosave', [TaxpayerFormController::class, 'autoSave'])->name('form.autosave');
     Route::post('/representatives', [RepresnetativeController::class, 'store'])->name('representative.store');
     Route::get('/representatives', [RepresnetativeController::class, 'representative']);
     Route::get('/viewRepresentatives', [RepresnetativeController::class, 'showRepresentative'])->name('showRepresentative');
@@ -60,9 +62,10 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/representatives/{id}', [RepresnetativeController::class, 'update'])->name('representative.update');
     Route::get('/generate-report', [TaxpayerFormController::class, 'generateReport'])->name('generateReport');
 
-    Route::get('/income_tax_declaration', [AnnualTaxController::class, 'formA'])->name('formA');
-    Route::post('/income_tax_declaration', [AnnualTaxController::class, 'submitFormA'])->name('submitFormA');
+    Route::get('/Annual-tax-form', [AnnualTaxController::class, 'viewAnnualTaxForm'])->name('viewAnnualTaxForm');
+    Route::post('/taxpayer/submit-annual-form', [AnnualTaxController::class, 'submitAnnualForm'])->name('taxpayer.submitAnnualForm');
 
+    
 
     Route::get('/appendix-one', [AnnualTaxController::class, 'appendixOne'])->name('appendixOne');
     Route::post('/appendix-one', [AnnualTaxController::class, 'storeAppendixOne'])->name('appendixOne.store');
@@ -71,7 +74,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/appendix-two', [AnnualTaxController::class, 'storeAppendixTwo'])->name('appendixTwo.store');
 
     Route::get('/form-c',[AnnualTaxController::class, 'formC'])->name('formC');
+
+    Route::get('/income_tax_declaration',[AnnualTaxController::class, 'formA'])->name('formA');
+    Route::post('/income_tax_declaration', [AnnualTaxController::class, 'submitFormA'])->name('submitFormA');
     Route::get('/AppendixThree',[AnnualTaxController::class, 'formF'])->name('formF');
+
     Route::get('/appendix/{number}', [AnnualTaxController::class, 'Appendix'])->name('appendix.show');
 
     Route::post('/store_AppendixThree', [AnnualTaxController::class, 'storeAppendixThree'])->name('AppendixThree.store');
@@ -99,6 +106,37 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/store_AppendixTwentyFive', [AnnualTaxController::class, 'storeAppendixTwentyFive'])->name('AppendixTwentyFive.store');
     Route::post('/store_AppendixTwentySix', [AnnualTaxController::class, 'storeAppendixTwentySix'])->name('AppendixTwentySix.store');
     Route::post('/store_AppendixTwentySeven', [AnnualTaxController::class, 'storeAppendixTwentySeven'])->name('AppendixTwentySeven.store');
+
+    Route::get('/store-appendixFour', [ViewAnnualFormTaxController::class, 'showAppendixFour'])->name('showAppendixFour');
+    Route::get('/store-appendixFive', [ViewAnnualFormTaxController::class, 'showAppendixFive'])->name('showAppendixFive');
+    Route::get('/store-appendixSix', [ViewAnnualFormTaxController::class, 'showAppendixSix'])->name('showAppendixSix');
+    Route::get('/store-appendixSeven', [ViewAnnualFormTaxController::class, 'showAppendixSeven'])->name('showAppendixSeven');
+
+    Route::put('/appendix-four/update', [ViewAnnualFormTaxController::class, 'updateAppendixFour'])->name('updateAppendixFour');
+    Route::put('/appendix-five/update', [ViewAnnualFormTaxController::class, 'updateAppendixFive'])->name('updateAppendixFive');
+    Route::put('/appendix-six/update}', [ViewAnnualFormTaxController::class, 'updateAppendixSix'])->name('updateAppendixSix');
+    Route::put('/appendix-seven/update}', [ViewAnnualFormTaxController::class, 'updateAppendixSeven'])->name('updateAppendixSeven');
+    Route::put('/appendix-eight/update}', [ViewAnnualFormTaxController::class, 'updateAppendixEight'])->name('updateAppendixEight');
+    Route::put('/appendix-nine/update}', [ViewAnnualFormTaxController::class, 'updateAppendixNine'])->name('updateAppendixNine');
+    Route::put('/appendix-ten/update}', [ViewAnnualFormTaxController::class, 'updateAppendixTen'])->name('updateAppendixTen');
+    Route::put('/appendix-eleven/update}', [ViewAnnualFormTaxController::class, 'updateAppendixEleven'])->name('updateAppendixEleven');
+    Route::put('/appendix-twelve/update}', [ViewAnnualFormTaxController::class, 'updateAppendixTwelve'])->name('updateAppendixTwelve');
+    Route::put('/appendix-thirteen/update}', [ViewAnnualFormTaxController::class, 'updateAppendixThirteen'])->name('updateAppendixThirteen');
+    Route::put('/appendix-fourteen/update}', [ViewAnnualFormTaxController::class, 'updateAppendixFourteen'])->name('updateAppendixForteen');
+    Route::put('/appendix-fifteen/update}', [ViewAnnualFormTaxController::class, 'updateAppendixFifteen'])->name('updateAppendixFifteen');
+    Route::put('/appendix-sisxteen/update}', [ViewAnnualFormTaxController::class, 'updateAppendixSixteen'])->name('updateAppendixSixteen');
+    Route::put('/appendix-seventeen/update}', [ViewAnnualFormTaxController::class, 'updateAppendixSeventeen'])->name('updateAppendixSeventeen');
+    Route::put('/appendix-eighteen/update}', [ViewAnnualFormTaxController::class, 'updateAppendixEighteen'])->name('updateAppendixEighteen');
+    Route::put('/appendix-nineteen/update}', [ViewAnnualFormTaxController::class, 'updateAppendixNineteen'])->name('updateAppendixNineteen');
+    Route::put('/appendix-twenty/update}', [ViewAnnualFormTaxController::class, 'updateAppendixTwenty'])->name('updateAppendixTwenty');
+    Route::put('/appendix-twentyOne/update}', [ViewAnnualFormTaxController::class, 'updateAppendixTwentyOne'])->name('updateAppendixTwentyOne');
+    Route::put('/appendix-twentyTwo/update}', [ViewAnnualFormTaxController::class, 'updateAppendixTwentyTwo'])->name('updateAppendixTwentyTwo');
+    Route::put('/appendix-twentyThree/update}', [ViewAnnualFormTaxController::class, 'updateAppendixTwentyThree'])->name('updateAppendixTwentyThree');
+    Route::put('/appendix-twentyFour/update}', [ViewAnnualFormTaxController::class, 'updateAppendixTwentyFour'])->name('updateAppendixTwentyFour');
+    Route::put('/appendix-twentyFive/update}', [ViewAnnualFormTaxController::class, 'updateAppendixTwentyFive'])->name('updateAppendixTwentyFive');
+    Route::put('/appendix-twentySix/update}', [ViewAnnualFormTaxController::class, 'updateAppendixTwentySix'])->name('updateAppendixTwentySix');
+    Route::put('/appendix-twentySeven/update}', [ViewAnnualFormTaxController::class, 'updateAppendixTwentySeven'])->name('updateAppendixTwentySeven');
+
 }); 
 
 

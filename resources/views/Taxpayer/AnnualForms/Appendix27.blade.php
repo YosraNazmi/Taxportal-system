@@ -1,8 +1,78 @@
 @extends('Taxpayer.AnnualTaxForm')
 
 @section('AppendixTwentySeven')
+@php
+    // Check if form data exists
+    $formData = \App\Models\AppendixTwentySeven::where('user_id', auth()->id())->get();
+@endphp
 <div class="custom-container mt-5">
     <h5 class="custom-header">Appendix #27 Statement of tax withhold from transactions during the tax year</h5>
+    @if ($formData->isNotEmpty() )
+    <form action="{{route('updateAppendixTwentySeven')}}" method="POST">
+        @csrf
+        @method('PUT')
+        @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
+        @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+        @endif
+        <div class="table-container mt-4">
+            <table  class="custom-table table-bordered table form-table " id="operations-table">
+                <thead>
+                    <tr>
+                        <th>code</th>
+                        <th>The Name of the entity makeing the deduction</th>
+                        <th>Tax Number</th>
+                        <th>Date of deduction</th>
+                        <th colspan="2">Arrived bill</th>
+                        <th>The amount of withheld tax</th>
+                        <th>Notes</th>
+                    </tr>
+                    <tr>
+                        <th colspan="4"></th>
+                        <th>Number</th>
+                        <th>Date</th>
+                        <th colspan="2"></th>
+                    </tr>
+
+                </thead>
+                <tbody id="table-body">
+                    @foreach ($formData as $index => $data)
+                    <tr>
+                        <td>100</td>
+                        <td><input type="text" name="deduction_entity[]" class="form-control" oninput="checkInputs()" value="{{ $data->deduction_entity }}"></td>
+                        <td><input type="text" name="tax_number[]" class="form-control" oninput="checkInputs()" value="{{ $data->tax_number }}"></td>
+                        <td><input type="date" name="date_of_deduction[]" class="form-control" oninput="checkInputs()" value="{{ $data->date_of_deduction }}"></td>
+                        <td><input type="number" name="number[]" class="form-control" oninput="checkInputs()" value="{{ $data->number }}"></td>
+                        <td><input type="date" name="date[]" class="form-control" oninput="checkInputs()" value="{{ $data->date }}"></td>
+                        <td><input type="number" name="amount_of_withheld_tax[]" class="form-control" oninput="checkInputs()" value="{{ $data->amount_of_withheld_tax }}"></td>
+                        <td><input type="text" name="notes[]" class="form-control" oninput="checkInputs()" value="{{ $data->notes }}"></td>
+                    </tr>
+                    @endforeach
+                    <!-- Add more rows as needed -->
+                    <tr class="footer-row">
+                        <td colspan="6" class="text-right total-cell">200 Total</td>
+                        <td><input type="number" name="total_1" class="form-control" id="total_amount1" value="{{ $formData->sum('total_1') ?? '' }}" readonly></td>
+                        <td colspan="3" class="text-right total-cell"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button type="submit" class="btn btn-primary">Update</button>
+            <button type="button" class="btn btn-info" id="prevButton">
+                <a href="{{ route('appendix.show', ['number' => 26]) }}">Previous</a>
+            </button>
+        </div>
+    </form>
+    @else
     <form action="{{route('AppendixTwentySeven.store')}}" method="POST">
         @csrf
         @if ($errors->any())
@@ -80,8 +150,12 @@
                 </tbody>
             </table>
             <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="button" class="btn btn-info" id="prevButton">
+                <a href="{{ route('appendix.show', ['number' => 26]) }}">Previous</a>
+            </button>
         </div>
     </form>
+    @endif
 </div>
 
 <script>

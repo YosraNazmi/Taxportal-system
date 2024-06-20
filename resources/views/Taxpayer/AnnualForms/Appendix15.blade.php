@@ -1,9 +1,78 @@
 @extends('Taxpayer.AnnualTaxForm')
 
 @section('AppendixFifteen')
+@php
+    // Check if form data exists
+    $formData = \App\Models\AppendixFifteen::where('user_id', auth()->id())->get();
+@endphp
 <div class="custom-container mt-5">
     <br>
     <h5 class="custom-header">Appendix #15 Statement of Fees and Administrative Expenses and Similar Amounts of Companies Resident in Kurdistan	</h5>
+    @if ($formData->isNotEmpty())
+    <form action="{{route('updateAppendixFifteen')}}" method="POST">
+        @csrf
+        @method('PUT')
+        @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
+        @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+        @endif
+        <table class="table table-bordered custom-table form-table " id="operations-table">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Tax Number</th>
+                    <th>Company Name</th>
+                    <th>Fees</th>
+                    <th>Administrative Expenses</th>
+                    <th>Research, development and consulting expenses</th>
+                    <th>Technical Assistance Expenditure</th>
+                    <th>Similar Amounts</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                @foreach ($formData as $index => $data)
+                <tr>
+                    <td>100</td>
+                    <td><input type="text" name="tax_number[]" class="form-control" oninput="checkInputs()" value="{{ $data->tax_number }}"></td>
+                    <td><input type="text" name="company_name[]" class="form-control" oninput="checkInputs()" value="{{ $data->company_name }}"></td>
+                    <td><input type="text" name="fees[]" class="form-control" oninput="checkInputs()" value="{{ $data->fees }}"></td>
+                    <td><input type="text" name="admin_expenses[]" class="form-control" oninput="checkInputs()" value="{{ $data->admin_expenses }}"></td>
+                    <td><input type="text" name="research_development_expenses[]" class="form-control" oninput="checkInputs()" value="{{ $data->research_development_expenses }}"></td>
+                    <td><input type="text" name="technical_assistance[]" class="form-control" oninput="checkInputs()" value="{{ $data->technical_assistance }}"></td>
+                    <td><input type="text" name="similar_amounts[]" class="form-control" oninput="checkInputs()" value="{{ $data->similar_amounts }}"></td>
+                </tr>
+                <tr class="footer-row">
+                    <td>200 Total</td>
+                    <td></td>
+                    <td></td>
+                    <td><input type="text" id="total_1" name="total_1" class="form-control" value="{{ $formData->sum('total_1') ?? '' }}" readonly></td>
+                    <td><input type="text" id="total_2" name="total_2" class="form-control" value="{{ $formData->sum('total_2') ?? '' }}" readonly></td>
+                    <td><input type="text" id="total_3" name="total_3" class="form-control" value="{{ $formData->sum('total_3') ?? '' }}" readonly></td>
+                    <td><input type="text" id="total_4" name="total_4" class="form-control" value="{{ $formData->sum('total_4') ?? '' }}" readonly></td>
+                    <td><input type="text" id="total_5" name="total_5" class="form-control" value="{{ $formData->sum('total_5') ?? '' }}" readonly></td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+        <button type="submit" class="btn btn-primary">Update</button>
+        <button type="button" class="btn btn-info" id="prevButton">
+            <a href="{{ route('appendix.show', ['number' => 14]) }}">Previous</a>
+        </button>
+        <button type="button" class="btn btn-info" id="prevButton">
+            <a href="{{ route('appendix.show', ['number' => 16]) }}">Next</a>
+        </button>
+    </form>
+    @else
     <form action="{{route('AppendixFifteen.store')}}" method="POST">
         @csrf
         @if ($errors->any())
@@ -78,7 +147,11 @@
         </table>
 
         <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="button" class="btn btn-info" id="prevButton">
+            <a href="{{ route('appendix.show', ['number' => 14]) }}">Previous</a>
+        </button>
     </form>
+    @endif
     <br>
 </div>
 
