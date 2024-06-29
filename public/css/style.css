@@ -24,11 +24,10 @@ body {
       text-decoration: none;
       transition: all 0.3s;
   }
-  
   a {
-    color: #1c3f55 !important;
-  }
-  
+    color: #1c3f55;
+    }
+    
   a:hover {
     color: #a1cce2;
     text-decoration: none;

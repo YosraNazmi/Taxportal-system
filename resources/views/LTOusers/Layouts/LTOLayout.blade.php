@@ -72,7 +72,7 @@
                         
                     </ul>
                 </li>
-                <li class="nav-item">
+                <li>
                     <a class="nav-link " data-bs-toggle="collapse" href="#collapseReport" role="button" aria-expanded="false" aria-controls="collapseReport">
                         <i class="bi bi-bar-chart-fill" style="font-size:1rem; vertical-align:bottom; padding:10px;"></i>Reprts
                     </a>
@@ -119,25 +119,24 @@
                             <ul class="navbar-nav">
                                 <!-- Notifications Account Dropdown -->
                                 <li class="nav-item dropdown">
-                                    <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
+                                    <a class="nav-link nav-icon" href="#" id="notificationsDropdown" data-bs-toggle="dropdown">
                                         <i class="bi bi-bell"></i>
                                         <span class="badge bg-primary badge-number">{{ auth()->guard('ltouser')->user()->unreadNotifications->count() }}</span>
                                     </a>
-                                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                        @foreach(auth()->guard('ltouser')->user()->unreadNotifications as $notification)
+                                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown">
+                                        @forelse(auth()->guard('ltouser')->user()->unreadNotifications as $notification)
                                             <div class="notification-item">
                                                 <i class="bi bi-arrow-right"></i>
-                                                <a href="{{ route('rejectedUser') }}">
-                                                  <h4>User: {{ $notification->data['user_name'] }}</h4>
-                                                  <p>{{ $notification->data['message'] }}</p>
-                                                  <p>Reason: {{ $notification->data['reason'] }}</p>
+                                                <a href="{{ $notification->data['url'] }}">
+                                                    <h4>{{ $notification->data['user_name'] }}</h4>
+                                                    <p>{{ $notification->data['message'] }}</p>
+                                                    <p>{{ $notification->data['comment'] ?? 'No comment' }}</p>
                                                 </a>
                                             </div>
                                             <hr>
-                                        @endforeach
-
-                                        <!-- Optionally mark notifications as read -->
-                                        {{ auth()->user()->unreadNotifications->markAsRead() }}
+                                        @empty
+                                            <p>No new notifications</p>
+                                        @endforelse
                                     </div>
                                 </li>
                                 <!-- User Account Dropdown -->
@@ -198,5 +197,25 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('notificationsDropdown').addEventListener('show.bs.dropdown', function() {
+            fetch('{{ route('notifications.markAsRead') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            }).then(response => {
+                if (response.ok) {
+                    console.log('Notifications marked as read.');
+                } else {
+                    console.error('Failed to mark notifications as read.');
+                }
+            }).catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    });
+</script>
 </html>

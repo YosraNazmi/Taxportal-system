@@ -2,14 +2,18 @@
 
 @section('AppendixSix')
 @php
-    // Fetch the form data for the user
-    $formData = \App\Models\AppendixSix::where('user_id', auth()->id())->first();
+    // Fetch the form data for the user with eager loading of 'tangibleAssets'
+    $formData = \App\Models\AppendixSix::with('tangibleAssets')->where('user_id', auth()->id())->first();
 
-    // Fetch tangible assets for the user's AppendixSix
-    $tangibleAssets = [];
-    if ($formData) {
+    // Initialize an empty collection for tangible assets
+    $tangibleAssets = collect([]);
+
+    // Check if $formData exists and has tangibleAssets loaded
+    if ($formData && $formData->relationLoaded('tangibleAssets')) {
         $tangibleAssets = $formData->tangibleAssets;
     }
+
+    // Calculate totals using collection methods
     $totals = [
         'total_book_value' => $tangibleAssets->sum('total_book_value'),
         'total_cost_acquisition' => $tangibleAssets->sum('total_cost_acquisition'),
@@ -18,14 +22,12 @@
         'total_accumulated' => $tangibleAssets->sum('total_accumulated'),
         'total_book_value_end' => $tangibleAssets->sum('total_book_value_end'),
     ];
-
-    //dd($formData, $tangibleAssets);
 @endphp
 <div class="custom-container mt-5">
     <br>
     <h5 class="text-center custom-header">Appendix #6 Expiration Statement of Tangible Assets (Other than Land)</h5>
-    @if ($formData || $tangibleAssets)
-   <form action="{{ route('updateAppendixSix')}}" method="Post">
+    @if ($formData || $tangibleAssets->isNotEmpty())
+    <form action="{{ route('updateAppendixSix')}}" method="Post">
         @csrf
         @method('PUT')
         @if ($errors->any())
@@ -46,7 +48,7 @@
         <div class="form-group row mt-4">
             <label class="col-md-4 col-form-label mt-4">Depreciation value according to the income statement:</label>
             <div class="col-md-4 mt-4">
-                <input placeholder="Enter Depreciation value  " type="text" name="depreciation_value" class="form-control" value="{{$formData->depreciation_value}}">
+                <input placeholder="Enter Depreciation value" type="text" name="depreciation_value" class="form-control" value="{{ $formData ? $formData->depreciation_value : '' }}">
             </div>
         </div>   
         <hr>
@@ -94,38 +96,34 @@
                 @foreach ($tangibleAssets as $index => $data)
                 <tr>
                     <td>100</td>
-                    <td><input type="text" name="category_assets[]" class="form-control" value="{{$data->category_assets}}"></td>
-                    <td><input type="text" name="directory_number[]" class="form-control" value="{{$data->directory_number}}"></td>
-                    <td><input type="text" name="book_value[]" class="form-control" value="{{$data->book_value}}"></td>
-                    <td><input type="text" name="cost_acquisition[]" class="form-control" value="{{$data->cost_acquisition}}"></td>
-                    <td><input type="text" name="cost_assets[]" class="form-control" value="{{$data->cost_assets}}"></td>
-                    <td><input type="text" name="total_allowable[]" class="form-control" value="{{$data->total_allowable}}"></td>
-                    <td><input type="text" name="accumulated[]" class="form-control" value="{{$data->accumulated}}"></td>
-                    <td><input type="text" name="book_value_end[]" class="form-control" value="{{$data->book_value_end}}"></td>
+                    <td><input type="text" name="category_assets[]" class="form-control" value="{{ $data->category_assets }}"></td>
+                    <td><input type="text" name="directory_number[]" class="form-control" value="{{ $data->directory_number }}"></td>
+                    <td><input type="text" name="book_value[]" class="form-control" value="{{ $data->book_value }}"></td>
+                    <td><input type="text" name="cost_acquisition[]" class="form-control" value="{{ $data->cost_acquisition }}"></td>
+                    <td><input type="text" name="cost_assets[]" class="form-control" value="{{ $data->cost_assets }}"></td>
+                    <td><input type="text" name="total_allowable[]" class="form-control" value="{{ $data->total_allowable }}"></td>
+                    <td><input type="text" name="accumulated[]" class="form-control" value="{{ $data->accumulated }}"></td>
+                    <td><input type="text" name="book_value_end[]" class="form-control" value="{{ $data->book_value_end }}"></td>
                 </tr>
                 @endforeach
             </tbody>
             <tfoot>
-                
                 <tr>
                     <td>200 Total</td>
                     <td></td>
                     <td></td>
-                    <td><input type="number" name="total_book_value" id="total_book_value" class="form-control" readonly value="{{ $totals['total_book_value'] }}" ></td>
-                    <td><input type="number" name="total_cost_acquisition" id="total_cost_acquisition" class="form-control" readonly value="{{ $totals['total_cost_acquisition'] }}" ></td>
-                    <td><input type="number" name="total_cost_assets" id="total_cost_assets" class="form-control" readonly value="{{ $totals['total_cost_assets'] }}" ></td>
-                    <td><input type="number" name="total_total_allowable" id="total_total_allowable" class="form-control" readonly value="{{ $totals['total_total_allowable'] }}" ></td>
-                    <td><input type="number" name="total_accumulated" id="total_accumulated" class="form-control" readonly value="{{ $totals['total_accumulated'] }}" ></td>
-                    <td><input type="number" name="total_book_value_end" id="total_book_value_end" class="form-control" readonly value="{{ $totals['total_book_value_end'] }}" ></td>
+                    <td><input type="number" name="total_book_value" id="total_book_value" class="form-control" readonly value="{{ $totals['total_book_value'] }}"></td>
+                    <td><input type="number" name="total_cost_acquisition" id="total_cost_acquisition" class="form-control" readonly value="{{ $totals['total_cost_acquisition'] }}"></td>
+                    <td><input type="number" name="total_cost_assets" id="total_cost_assets" class="form-control" readonly value="{{ $totals['total_cost_assets'] }}"></td>
+                    <td><input type="number" name="total_total_allowable" id="total_total_allowable" class="form-control" readonly value="{{ $totals['total_total_allowable'] }}"></td>
+                    <td><input type="number" name="total_accumulated" id="total_accumulated" class="form-control" readonly value="{{ $totals['total_accumulated'] }}"></td>
+                    <td><input type="number" name="total_book_value_end" id="total_book_value_end" class="form-control" readonly value="{{ $totals['total_book_value_end'] }}"></td>
                 </tr>
-           
             </tfoot>
         </table>
         <button type="submit" class="btn btn-primary">Submit</button>
-        <button type="button" class="btn btn-info" id="prevButton" ><a href="{{ route('appendix.show', ['number' => 5]) }}">Previous</a></button>
-        <button type="button" class="btn btn-info" id="prevButton">
-            <a href="{{ route('appendix.show', ['number' => 7]) }}">Next</a>
-        </button>
+        <button type="button" class="btn btn-info" id="prevButton"><a href="{{ route('appendix.show', ['number' => 5]) }}">Previous</a></button>
+        <button type="button" class="btn btn-info" id="prevButton"><a href="{{ route('appendix.show', ['number' => 7]) }}">Next</a></button>
     </form>
     @else
     <form action="{{route('AppendixSix.store')}}" method="POST">

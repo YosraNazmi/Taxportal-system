@@ -8,6 +8,7 @@ use App\Models\LTOUser;
 use App\Models\Payment;
 use App\Models\User;
 use App\Notifications\UserRejectedNotification;
+use App\Notifications\UserSecondApprovedNotification;
 use Exception;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Http\Request;
@@ -138,6 +139,7 @@ class LTOUserController extends Controller
 
     public function firstApprove(Request $request, User $user)
     {
+       
         $request->validate([
             'approval_comment' => 'required|string|max:255',
         ]);
@@ -147,6 +149,14 @@ class LTOUserController extends Controller
             'status' => 'pending_second_approval',
             'approval_comment' => $request->approval_comment,
         ]);
+
+        // Notify the LTOUser Admin
+        $adminUser = LTOUser::where('role', 'Manager')->first();
+        if ($adminUser) {
+            $adminUser->notify(new \App\Notifications\UserSecondApprovedNotification($user, $request->approval_comment));
+        }
+        
+
 
         return redirect()->route('review-pending-users')->with('success', 'Taxpayer approved successfully and pending further review.');
     }

@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\AnnualTaxController;
 use App\Http\Controllers\ChartController;
+use App\Http\Controllers\Controller;
 use App\Http\Controllers\LTOUserController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RepresnetativeController;
@@ -107,8 +109,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/store_AppendixTwentySix', [AnnualTaxController::class, 'storeAppendixTwentySix'])->name('AppendixTwentySix.store');
     Route::post('/store_AppendixTwentySeven', [AnnualTaxController::class, 'storeAppendixTwentySeven'])->name('AppendixTwentySeven.store');
 
-    Route::get('/store-appendixFour', [ViewAnnualFormTaxController::class, 'showAppendixFour'])->name('showAppendixFour');
-    Route::get('/store-appendixFive', [ViewAnnualFormTaxController::class, 'showAppendixFive'])->name('showAppendixFive');
+
     Route::get('/store-appendixSix', [ViewAnnualFormTaxController::class, 'showAppendixSix'])->name('showAppendixSix');
     Route::get('/store-appendixSeven', [ViewAnnualFormTaxController::class, 'showAppendixSeven'])->name('showAppendixSeven');
 
@@ -160,6 +161,7 @@ Route::middleware(['auth:ltouser'])->controller(LTOUserController::class)->group
 });
 
 Route::middleware(['auth:ltouser'])->group(function () {
+    Route::post('/notifications/markAsRead', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
     Route::get('/ltouser/viewAllPitForms', [TaxpayerFormController::class, 'ViewAllPITForms'])->name('viewAllPitForms');
     Route::get('/ltouser/allTaxpayers/PITForm/{id}',[TaxpayerFormController::class, 'ViewOnePitForm'])->name('ViewOnePitForm');
     Route::get('/ltouser/viewAllPayment',[PaymentController::class, 'viewAllPayment'])->name('viewAllPayment');

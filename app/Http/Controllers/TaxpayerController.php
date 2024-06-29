@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\LTOUser;
 use App\Models\Taxpayer;
 use App\Models\User;
+use App\Notifications\NewUserNotification;
 use App\Notifications\TaxpayerRegistered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Session;
 
 class TaxpayerController extends Controller
@@ -55,6 +57,10 @@ class TaxpayerController extends Controller
             $user->status = 'pending'; // Set initial status to pending for approval process
             $user->save();
 
+             // Notify ltouser about the new user registration
+            $ltouser = LTOUser::where('role', 'Adminstative')->first();
+            Notification::send($ltouser, new NewUserNotification($user));
+
             DB::commit();
             return redirect()->route('taxpayerHome')->with('success', 'User registered successfully!');
 
@@ -73,15 +79,25 @@ class TaxpayerController extends Controller
                 'password' => 'required',
             ]);
 
-            // Attempt to log in as a normal user using the 'web' guard
-            if (Auth::guard('web')->attempt($credentials, $request->filled('remember'))) {
-                $request->session()->regenerate();
-                return redirect()->route('tp.dashboard')->with('success', 'You are now logged in!');
-            }
+            // Attempt to fetch the user with the provided email
+            $user = \App\Models\User::where('email', $credentials['email'])->first();
 
-            return back()->withErrors([
-                'email' => 'The provided credentials do not match our records.',
-            ])->onlyInput('email');
+            // Check if the user exists and the status is "approved"
+            if ($user && $user->status === 'approved') {
+                // Attempt to log in as a normal user using the 'web' guard
+                if (Auth::guard('web')->attempt($credentials, $request->filled('remember'))) {
+                    $request->session()->regenerate();
+                    return redirect()->route('tp.dashboard')->with('success', 'You are now logged in!');
+                }
+
+                return back()->withErrors([
+                    'email' => 'The provided credentials do not match our records.',
+                ])->onlyInput('email');
+            } else {
+                return back()->withErrors([
+                    'email' => 'Your account is not approved yet. Please wait until you receive an email from the LTO office.',
+                ])->onlyInput('email');
+            }
         } catch (\Exception $e) {
             // Log the exception or display a generic error message
             Log::error('Exception occurred during authentication: ' . $e->getMessage());
@@ -90,7 +106,8 @@ class TaxpayerController extends Controller
                 'error' => 'An unexpected error occurred. Please try again later.',
             ]);
         }
-    }  
+    }
+    
     
     public function TPLogin()
     {

@@ -1,17 +1,24 @@
 <?php
 
 namespace App\Notifications;
+
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class AdminNotificationForRejection extends Notification
+class NewUserNotification extends Notification
 {
-    public $user;
-    public $comment;
+    use Queueable;
 
-    public function __construct($user, $comment)
+
+    public $user;
+    
+
+    public function __construct($user)
     {
         $this->user = $user;
-        $this->comment = $comment;
+ 
     }
 
     public function via($notifiable)
@@ -23,12 +30,9 @@ class AdminNotificationForRejection extends Notification
     {
         return [
             'user_name' => $this->user->firstname . ' ' . $this->user->lastname,
-            'message' => 'A user has been rejected.',
-            'reason' => 'Some reason',
-            'url' => route('rejectedUser') // Add the route for the rejected user page
+            'message' => 'A new user has registered.',
+            'reason' => null,
+            'url' => route('review-pending-users') // Add the route for the new user page
         ];
-
-        
     }
 }
-

@@ -41,63 +41,72 @@ use Illuminate\Support\Facades\Log;
 class ViewAnnualFormTaxController extends Controller
 {
 
-
-    public function showAppendixFour()
-    {    
-        $appendixFourData = AppendixFour::where('user_id', auth()->id())->get();
-        return view('Taxpayer.UpdateAnnualForm.Appendix4', compact('appendixFourData'));
-    }
-    
-    public function showAppendixFive()
-    {
-        $appendixFiveData = AppendixFive::where('user_id', auth()->id())->get();
-        return view('Taxpayer.UpdateAnnualForm.Appendix5', compact('appendixFiveData'));
-    }
-    public function showAppendixSix()
-    {
-        return view('Taxpayer.AnnualForms.Appendix6');
-    }
-    public function showAppendixSeven()
-    {
-        return view('Taxpayer.AnnualForms.Appendix7');
-    }
-
     public function updateAppendixFour(Request $request) 
     {
         // Validate the incoming data
         $validatedData = $request->validate([
-            'appendix_id.*' => 'required|exists:appendix_four,id',
             'corporation.*' => 'nullable|string|max:255',
             'tax_number.*' => 'nullable|string|max:255',
             'nationality.*' => 'nullable|string|max:255',
             'legal_form.*' => 'nullable|string|max:255',
             'ownership_ratio.*' => 'nullable|numeric|min:0|max:100',
+          //  'ownershipRatio' => 'nullable|numeric', // Corrected 'numaric' to 'numeric'
         ]);
     
-        // Get the authenticated user's ID
-        $userId = auth()->id();
+        $userId = Auth::id();
     
-        // Loop through each submitted record
-        foreach ($request->appendix_id as $index => $appendixId) {
-            // Find the AppendixFour record by ID and user_id
-            $appendix = AppendixFour::where('id', $appendixId)
-                ->where('user_id', $userId)
-                ->firstOrFail();
+        // Fetch existing records for the user
+        $existingRecords = AppendixFour::where('user_id', $userId)->get()->keyBy('corporation');
     
-            // Update the AppendixFour record with the new data
-            $appendix->update([
-                'corporation' => $request->corporation[$index],
-                'tax_number' => $request->tax_number[$index],
-                'nationality' => $request->nationality[$index],
-                'legal_form' => $request->legal_form[$index],
-                'ownership_ratio' => $request->ownership_ratio[$index],
-            ]);
+        $data = [];
+        foreach ($validatedData['corporation'] as $index => $corporation) {
+            // Check if the row is completely empty
+            if (empty($validatedData['corporation'][$index]) &&
+                empty($validatedData['tax_number'][$index]) &&
+                empty($validatedData['nationality'][$index]) &&
+                empty($validatedData['legal_form'][$index]) &&
+                empty($validatedData['ownership_ratio'][$index])) {
+                continue; // Skip this row if it's empty
+            }
+    
+            $data[$corporation] = [
+                'user_id' => $userId,
+                'corporation' => $validatedData['corporation'][$index],
+                'tax_number' => $validatedData['tax_number'][$index],
+                'nationality' => $validatedData['nationality'][$index],
+                'legal_form' => $validatedData['legal_form'][$index],
+                'ownership_ratio' => $validatedData['ownership_ratio'][$index],
+              //  'ownershipRatio' => $validatedData['ownershipRatio'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+    
+        // Update existing records and insert new ones
+        foreach ($data as $corporation => $row) {
+            if (isset($existingRecords[$corporation])) {
+                // Update existing record
+                AppendixFour::where('user_id', $userId)
+                    ->where('corporation', $corporation)
+                    ->update($row);
+                unset($existingRecords[$corporation]);
+            } else {
+                // Insert new record
+                AppendixFour::create($row);
+            }
+        }
+    
+        // Delete any records that were not included in the new data
+        foreach ($existingRecords as $corporation => $record) {
+            AppendixFour::where('user_id', $userId)
+                ->where('corporation', $corporation)
+                ->delete();
         }
     
         // Return a response indicating success
-        return redirect()->route('showAppendixFive')->with('success', 'Appendix 4 updated successfully. Proceed to Appendix 5.');
+        return redirect()->route('appendix.show', ['number' => 5])->with('success', 'Appendix 4 updated successfully. Proceed to Appendix 5.');
     }
-
+    
     public function updateAppendixFive(Request $request)
     {
         $userId = $request->user()->id;
@@ -134,7 +143,7 @@ class ViewAnnualFormTaxController extends Controller
             $appendix->update($fields);
         }
 
-        return redirect()->route('showAppendixSix')->with('success', 'Appendix 5 updated successfully. Proceed to Appendix 6.');
+        return redirect()->route('appendix.show', ['number' => 6])->with('success', 'Appendix 5 updated successfully. Proceed to Appendix 6.');
     }
 
     public function updateAppendixSix(Request $request)
@@ -213,7 +222,7 @@ class ViewAnnualFormTaxController extends Controller
         $appendixSix->tangibleAssets()->delete();
         $appendixSix->tangibleAssets()->createMany($tangibleAssetsData);
 
-        return redirect()->route('showAppendixSix')->with('success', 'Appendix 6 updated successfully. Proceed to Appendix 7.');
+        return redirect()->route('appendix.show', ['number' => 7])->with('success', 'Appendix 6 updated successfully. Proceed to Appendix 7.');
     }
 
     public function updateAppendixSeven(Request $request)

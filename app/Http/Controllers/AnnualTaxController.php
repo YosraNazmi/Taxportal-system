@@ -714,110 +714,110 @@ class AnnualTaxController extends Controller
     }
 
     public function storeAppendixEight(Request $request)
-{
-    $request->validate([
-        'tax_number.1.*' => 'nullable|string',
-        'owned_company_name.1.*' => 'nullable|string',
-        'number_of_shares.1.*' => 'nullable|integer',
-        'ownership_percentage.1.*' => 'nullable|numeric',
-        'book_value.1.*' => 'nullable|numeric',
-        'accounting_profit.1.*' => 'nullable|numeric',
-        
-        'tax_number.2.*' => 'nullable|string',
-        'owned_company_name.2.*' => 'nullable|string',
-        'type_of_company.2.*' => 'nullable|string',
-        'number_of_shares.2.*' => 'nullable|integer',
-        'ownership_percentage.2.*' => 'nullable|numeric',
-        'number_of_preferred_contribution.2.*' => 'nullable|integer',
-        'book_value.2.*' => 'nullable|numeric',
-        'accounting_profit.2.*' => 'nullable|numeric',
-        
-        'tax_number.3.*' => 'nullable|string',
-        'owned_company_name.3.*' => 'nullable|string',
-        'nationality.3.*' => 'nullable|string',
-        'company_type.3.*' => 'nullable|string',
-        'number_of_shares.3.*' => 'nullable|integer',
-        'ownership_percentage.3.*' => 'nullable|numeric',
-        'number_of_preferred_shared.3.*' => 'nullable|integer',
-        'book_value.3.*' => 'nullable|numeric',
-        'accounting_profit.3.*' => 'nullable|numeric',
-        
-        'total_1' => 'nullable|numeric',
-        'total_2' => 'nullable|numeric',
-        'total_3' => 'nullable|numeric',
-    ]);
+    {
+            $request->validate([
+                'tax_number.1.*' => 'nullable|string',
+                'owned_company_name.1.*' => 'nullable|string',
+                'number_of_shares.1.*' => 'nullable|integer',
+                'ownership_percentage.1.*' => 'nullable|numeric',
+                'book_value.1.*' => 'nullable|numeric',
+                'accounting_profit.1.*' => 'nullable|numeric',
+                
+                'tax_number.2.*' => 'nullable|string',
+                'owned_company_name.2.*' => 'nullable|string',
+                'type_of_company.2.*' => 'nullable|string',
+                'number_of_shares.2.*' => 'nullable|integer',
+                'ownership_percentage.2.*' => 'nullable|numeric',
+                'number_of_preferred_contribution.2.*' => 'nullable|integer',
+                'book_value.2.*' => 'nullable|numeric',
+                'accounting_profit.2.*' => 'nullable|numeric',
+                
+                'tax_number.3.*' => 'nullable|string',
+                'owned_company_name.3.*' => 'nullable|string',
+                'nationality.3.*' => 'nullable|string',
+                'company_type.3.*' => 'nullable|string',
+                'number_of_shares.3.*' => 'nullable|integer',
+                'ownership_percentage.3.*' => 'nullable|numeric',
+                'number_of_preferred_shared.3.*' => 'nullable|integer',
+                'book_value.3.*' => 'nullable|numeric',
+                'accounting_profit.3.*' => 'nullable|numeric',
+                
+                'total_1' => 'nullable|numeric',
+                'total_2' => 'nullable|numeric',
+                'total_3' => 'nullable|numeric',
+            ]);
 
-    $userId = Auth::id();
-    $total_1 = $request->input('total_1');
-    $total_2 = $request->input('total_2');
-    $total_3 = $request->input('total_3');
+            $userId = Auth::id();
+            $total_1 = $request->input('total_1');
+            $total_2 = $request->input('total_2');
+            $total_3 = $request->input('total_3');
 
-    // Log totals for debugging
-    Log::info("Total 1: $total_1, Total 2: $total_2, Total 3: $total_3");
+            // Log totals for debugging
+            Log::info("Total 1: $total_1, Total 2: $total_2, Total 3: $total_3");
 
-    // Store data in appendix_eight table
-    if (isset($request->tax_number['1'])) {
-        foreach ($request->tax_number['1'] as $key => $value) {
-            if (!empty($value) || !empty($request->owned_company_name['1'][$key]) || !empty($request->number_of_shares['1'][$key]) || !empty($request->ownership_percentage['1'][$key]) || !empty($request->book_value['1'][$key]) || !empty($request->accounting_profit['1'][$key])) {
-                AppendixEight::create([
-                    'user_id' => $userId,
-                    'total_1' => $total_1,
-                    'tax_number' => $value,
-                    'owned_company_name' => $request->owned_company_name['1'][$key],
-                    'number_of_shares' => $request->number_of_shares['1'][$key] ?? 0,
-                    'ownership_percentage' => $request->ownership_percentage['1'][$key] ?? 0.0,
-                    'book_value' => $request->book_value['1'][$key] ?? 0.0,
-                    'accounting_profit' => $request->accounting_profit['1'][$key] ?? 0.0,
-                ]);
+            // Store data in appendix_eight table
+            if (isset($request->tax_number['1'])) {
+                foreach ($request->tax_number['1'] as $key => $value) {
+                    if (!empty($value) || !empty($request->owned_company_name['1'][$key]) || !empty($request->number_of_shares['1'][$key]) || !empty($request->ownership_percentage['1'][$key]) || !empty($request->book_value['1'][$key]) || !empty($request->accounting_profit['1'][$key])) {
+                        AppendixEight::create([
+                            'user_id' => $userId,
+                            'total_1' => $total_1,
+                            'tax_number' => $value,
+                            'owned_company_name' => $request->owned_company_name['1'][$key],
+                            'number_of_shares' => $request->number_of_shares['1'][$key] ?? 0,
+                            'ownership_percentage' => $request->ownership_percentage['1'][$key] ?? 0.0,
+                            'book_value' => $request->book_value['1'][$key] ?? 0.0,
+                            'accounting_profit' => $request->accounting_profit['1'][$key] ?? 0.0,
+                        ]);
+                    }
+                }
             }
-        }
-    }
 
-    // Store data in appendix_eight_b table
-    if (isset($request->tax_number['2'])) {
-        foreach ($request->tax_number['2'] as $key => $value) {
-            if (!empty($value) || !empty($request->owned_company_name['2'][$key]) || !empty($request->type_of_company['2'][$key]) || !empty($request->number_of_shares['2'][$key]) || !empty($request->ownership_percentage['2'][$key]) || !empty($request->number_of_preferred_contribution['2'][$key]) || !empty($request->book_value['2'][$key]) || !empty($request->accounting_profit['2'][$key])) {
-                AppendixEightB::create([
-                    'user_id' => $userId,
-                    'tax_number' => $value,
-                    'total_2' => $total_2,
-                    'owned_company_name' => $request->owned_company_name['2'][$key],
-                    'type_of_company' => $request->type_of_company['2'][$key],
-                    'number_of_shares' => $request->number_of_shares['2'][$key] ?? 0,
-                    'ownership_percentage' => $request->ownership_percentage['2'][$key] ?? 0.0,
-                    'number_of_preferred_contribution' => $request->number_of_preferred_contribution['2'][$key] ?? 0,
-                    'book_value' => $request->book_value['2'][$key] ?? 0.0,
-                    'accounting_profit' => $request->accounting_profit['2'][$key] ?? 0.0,
-                ]);
+            // Store data in appendix_eight_b table
+            if (isset($request->tax_number['2'])) {
+                foreach ($request->tax_number['2'] as $key => $value) {
+                    if (!empty($value) || !empty($request->owned_company_name['2'][$key]) || !empty($request->type_of_company['2'][$key]) || !empty($request->number_of_shares['2'][$key]) || !empty($request->ownership_percentage['2'][$key]) || !empty($request->number_of_preferred_contribution['2'][$key]) || !empty($request->book_value['2'][$key]) || !empty($request->accounting_profit['2'][$key])) {
+                        AppendixEightB::create([
+                            'user_id' => $userId,
+                            'tax_number' => $value,
+                            'total_2' => $total_2,
+                            'owned_company_name' => $request->owned_company_name['2'][$key],
+                            'type_of_company' => $request->type_of_company['2'][$key],
+                            'number_of_shares' => $request->number_of_shares['2'][$key] ?? 0,
+                            'ownership_percentage' => $request->ownership_percentage['2'][$key] ?? 0.0,
+                            'number_of_preferred_contribution' => $request->number_of_preferred_contribution['2'][$key] ?? 0,
+                            'book_value' => $request->book_value['2'][$key] ?? 0.0,
+                            'accounting_profit' => $request->accounting_profit['2'][$key] ?? 0.0,
+                        ]);
+                    }
+                }
             }
-        }
-    }
 
-    // Store data in appendix_eight_c table
-    if (isset($request->tax_number['3'])) {
-        foreach ($request->tax_number['3'] as $key => $value) {
-            if (!empty($value) || !empty($request->owned_company_name['3'][$key]) || !empty($request->nationality['3'][$key]) || !empty($request->company_type['3'][$key]) || !empty($request->number_of_shares['3'][$key]) || !empty($request->ownership_percentage['3'][$key]) || !empty($request->number_of_preferred_shared['3'][$key]) || !empty($request->book_value['3'][$key]) || !empty($request->accounting_profit['3'][$key])) {
-                AppendixEightC::create([
-                    'user_id' => $userId,
-                    'total_3' => $total_3,
-                    'tax_number' => $value,
-                    'owned_company_name' => $request->owned_company_name['3'][$key],
-                    'nationality' => $request->nationality['3'][$key],
-                    'company_type' => $request->company_type['3'][$key],
-                    'number_of_shares' => $request->number_of_shares['3'][$key] ?? 0,
-                    'ownership_percentage' => $request->ownership_percentage['3'][$key] ?? 0.0,
-                    'number_of_preferred_shared' => $request->number_of_preferred_shared['3'][$key] ?? 0,
-                    'book_value' => $request->book_value['3'][$key] ?? 0.0,
-                    'accounting_profit' => $request->accounting_profit['3'][$key] ?? 0.0,
-                ]);
+            // Store data in appendix_eight_c table
+            if (isset($request->tax_number['3'])) {
+                foreach ($request->tax_number['3'] as $key => $value) {
+                    if (!empty($value) || !empty($request->owned_company_name['3'][$key]) || !empty($request->nationality['3'][$key]) || !empty($request->company_type['3'][$key]) || !empty($request->number_of_shares['3'][$key]) || !empty($request->ownership_percentage['3'][$key]) || !empty($request->number_of_preferred_shared['3'][$key]) || !empty($request->book_value['3'][$key]) || !empty($request->accounting_profit['3'][$key])) {
+                        AppendixEightC::create([
+                            'user_id' => $userId,
+                            'total_3' => $total_3,
+                            'tax_number' => $value,
+                            'owned_company_name' => $request->owned_company_name['3'][$key],
+                            'nationality' => $request->nationality['3'][$key],
+                            'company_type' => $request->company_type['3'][$key],
+                            'number_of_shares' => $request->number_of_shares['3'][$key] ?? 0,
+                            'ownership_percentage' => $request->ownership_percentage['3'][$key] ?? 0.0,
+                            'number_of_preferred_shared' => $request->number_of_preferred_shared['3'][$key] ?? 0,
+                            'book_value' => $request->book_value['3'][$key] ?? 0.0,
+                            'accounting_profit' => $request->accounting_profit['3'][$key] ?? 0.0,
+                        ]);
+                    }
+                }
             }
-        }
+
+        // Redirect back with a success message
+        return redirect()->route('appendix.show', ['number' => 9])->with('success', 'Appendix 8 submitted successfully. Proceed to Appendix 9.');
     }
-
-   // Redirect back with a success message
-   return redirect()->route('appendix.show', ['number' => 9])->with('success', 'Appendix 8 submitted successfully. Proceed to Appendix 9.');
-}
-
+    
     // Helper function to calculate total
     private function calculateTotal($values)
     {
